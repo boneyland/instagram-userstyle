@@ -2,24 +2,16 @@
 node_modules/
 __pycache__/
 
-# SingleFile snapshots: 273MB of captured pages, deliberately kept local.
-# They are captures of a logged-in session, so they carry feed contents --
-# the usernames of accounts in the feed -- and this repo is public.
-# Note the cost: verify.py and scoped.py read this folder and nothing else,
-# so a fresh clone cannot run either script until snapshots are captured.
+# SingleFile snapshots of Instagram pages.
+# Note the cost: verify.py and scoped.py read this folder and nothing else, so a fresh clone
+# cannot run either script until snapshots are captured.
 Instagram_snapshots/
 
-# Screenshot of a logged-in feed: third-party accounts, faces and captions.
-# Untracked for the same reason as the snapshots. Delete this line to include it.
-/Preview_1246.png
-
 # Empty placeholder files created by Claude Code's Bash sandbox.
-# The sandbox denies writes to config paths that would otherwise be loaded and
-# executed automatically, and enforces that with read-only bind mounts. A bind
-# mount needs its target to exist, so every denied path that is missing gets
-# created as an empty 0-byte file and is left behind when the sandbox exits.
-# None of these belong to the project. They are hidden from the VS Code
-# explorer too -- see .vscode/settings.json.
+# The sandbox denies writes to config paths that would otherwise be loaded and executed automatically,
+# and enforces that with read-only bind mounts. A bind mount needs its target to exist,
+# so every denied path that is missing gets created as an empty 0-byte file and is left behind
+# when the sandbox exits. None of these belong to the project.
 /.bash_profile
 /.bashrc
 /.gitconfig
@@ -30,13 +22,12 @@ Instagram_snapshots/
 /.zprofile
 /.zshrc
 
-# Also a sandbox placeholder. There are no submodules here; if one is ever
-# added, git needs this file tracked, so remove the line and the empty file.
+# Also a sandbox placeholder. There are no submodules here; if one is ever added, git needs
+# this file tracked, so remove the line and the empty file.
 /.gitmodules
 
-# Sandbox placeholders inside .claude/. The real content -- skills/ -- is
-# tracked. If you ever write a genuine settings.json or hook here, drop its
-# line from this list first.
+# Sandbox placeholders inside .claude/
+# If you ever write a genuine settings.json or hook here, drop its line from this list first.
 /.claude/agents
 /.claude/commands
 /.claude/hooks
@@ -49,6 +40,5 @@ Instagram_snapshots/
 /.claude/workflows
 /.claude/.cc-writes/
 
-# Local, machine-specific Claude Code settings (not a placeholder by nature,
-# though it happens to be one right now).
+# Local, machine-specific Claude Code settings (not a placeholder by nature, though it happens to be one right now).
 /.claude/settings.local.json

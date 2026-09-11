@@ -1,24 +1,12 @@
 # Rule notes
 
-Why each rule in `Instagram.user.css` is written the way it is, and what was
-measured to get there.
+Why each rule in `Instagram.user.css` is written the way it is, and what was measured to get there.
 
-**This file exists because the style itself ships.** `Instagram.user.css` is
-uploaded to userstyles.world, where its comments are read by installers and by
-anyone editing the style in Stylus, so it carries only short explanations of
-what a rule does. Snapshot filenames, element counts, pixel measurements,
-references to `verify.py` / `scoped.py` / `CHANGELOG.md`, and the history of
-what a rule used to be are all project-internal — they belong here.
+**This file exists because the style itself ships.** `Instagram.user.css` is uploaded to userstyles.world, where its comments are read by installers and by anyone editing the style in Stylus, so it carries only short explanations of what a rule does. Snapshot filenames, element counts, pixel measurements, references to `verify.py` / `scoped.py` / `CHANGELOG.md`, and the history of what a rule used to be are all project-internal — they belong here.
 
-The text below is the reasoning as it stood in the style file before that
-split, preserved verbatim. Treat it as the evidence record for each rule:
-**read the note here before loosening a guard or changing a number.** Where a
-claim is inference rather than measurement it says so, and those markers are
-load-bearing — see the comment conventions in `CLAUDE.md`.
+The text below is the reasoning as it stood in the style file before that split, preserved verbatim. Treat it as the evidence record for each rule: **read the note here before loosening a guard or changing a number.** Where a claim is inference rather than measurement it says so, and those markers are load-bearing — see the comment conventions in `CLAUDE.md`.
 
-Sections are in the order the rules appear in the style. A heading of
-*(section header)* is a block comment that introduces a group of rules rather
-than a single one.
+Sections are in the order the rules appear in the style. A heading of *(section header)* is a block comment that introduces a group of rules rather than a single one.
 
 ---
 
@@ -183,9 +171,7 @@ Ads and reels wrap their media in a shrink-to-fit anchor. Left as-is, the anchor
 
 Reels, on each of the three URLs where one gets a page of its own:
 
-https://www.instagram.com/<user>/reel/<id>/
-https://www.instagram.com/p/<id>/
-https://www.instagram.com/<user>/p/<id>/
+https://www.instagram.com/<user>/reel/<id>/ https://www.instagram.com/p/<id>/ https://www.instagram.com/<user>/p/<id>/
 
 Those three render ONE layout, so the rules below are written once and reach all of them. Measured across three snapshots -- the same reel reached by both post-permalink paths, plus a different reel by a different user on /<user>/reel/<id>/ -- every selector count and every box agrees: no <article> and no [role="dialog"], one --x-maxWidth column at Instagram's stock min(100%, 673px), a 337x599.1 video in a `padding-bottom:177.778%` box, --media-info at its stock 335px, and zero carousel slides.
 
