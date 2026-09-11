@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026.9.12.1
+
+Compared against `2026.9.11.7`, the entry below. None of these has been published, so an installer coming from `20260910` receives all eight.
+
+### Fixed
+
+- **A feed reel whose box ratio happens to end in `125` was treated as a portrait reel and cropped.** Found while answering a question about where Instagram's percentages come from; the bug is older than the landscape work and was inherited by it.
+
+  **What was wrong.** Both 125% rules were keyed on `[style*="padding-bottom"][style*="125%"]`, and `[style*="125%"]` is a substring test over the WHOLE style attribute. `padding-bottom:68.125%` contains the substring `125%`. So a reel at that ratio matched the portrait selector, was capped by arithmetic derived from 1.25, and had `object-fit: cover` crop it to a shape it never had. The landscape rules added in 2026.9.11.7 use the negation of the same test, so such a reel was excluded from the rules that would have sized it correctly -- one misclassification, both halves wrong.
+
+  **This is not hypothetical.** `68.125%` is an observed value: it is on a photo in `Instagram_feed2.html`. It is exactly `109/160`, so it is the kind of number Instagram's own arithmetic produces, and nothing about a reel prevents it. Confirmed against the real markup by setting that value on the landscape reel's box and asking Firefox which selectors matched: the portrait selector matched, the landscape selector did not.
+
+  **What changed.** Every one of the six guards now anchors the match to the property name and the whole value, in both spellings inline styles occur in: `:is([style*="padding-bottom:125%"], [style*="padding-bottom: 125%"])`, and the negation as two chained `:not()`s. A trailing `%` terminates the match, so `padding-bottom:125.5%` no longer matches either. Verified after, on the landscape reel's box in `Instagram_feed2.html`: `68.125%`, `56.2696%`, `75%`, `100%` and `125.5%` all classify as landscape; `125%` and `125%` with the re-rendered space both classify as portrait.
+
+  **Why matching the whole value is right here**, when the standing rule in `CLAUDE.md` is never to match a whole percentage. That rule exists because one ratio reaches the DOM under several spellings -- 3:4 arrives as `133.333%`, `133.33333333333331%` and `133.31719128329297%`. It does not apply to `125%`, which is not a computed ratio at all: it is the constant Instagram clamps anything taller than 4:5 to. Across all sixteen snapshots the only spellings of the round values are the bare `75%`, `100%` and `125%`, with every computed value carrying decimals. Exactness is what the split needs, and a prefix is what would break it.
+
+### Verification
+
+`verify.py` two-file mode reports the rewrite **computationally identical** to `2026.9.11.7` on the feed snapshot, at 142 declarations on both sides -- so Firefox parsed the `:is()` spelling rather than dropping it. `scoped.py --diff` reports **no snapshot renders differently**, all sixteen, standard and custom alike. Both are the expected result: no box in any snapshot is both a reel and a ratio ending in `125`, so this is a pure refactor there, and the defect it fixes is one no saved page happens to contain.
+
 ## 2026.9.11.7
 
 Compared against `2026.9.11.6`, the entry below. None of these has been published, so an installer coming from `20260910` receives all seven.
@@ -22,13 +42,19 @@ Compared against `2026.9.11.6`, the entry below. None of these has been publishe
 
 ### Verification
 
-`verify.py` passes all four checks at 42 rules and 142 declarations, against 39 and 125 before -- exactly the three new rules and their seventeen longhands, so Firefox dropped nothing. `scoped.py --diff` against `2026.9.11.6` reports **one** snapshot changed, `Instagram_feed2.html`, and no `font-size`, `line-height` or `zoom` anywhere in it; `Instagram_feed1.html` holds only a 125% reel and is untouched, as are all fourteen post and modal pages.
+`verify.py` passes all four checks at 42 rules and 142 declarations, against 39 and 125 before -- exactly the four new rules and their seventeen longhands, so Firefox dropped nothing.
+
+  `scoped.py --diff` against `2026.9.11.6` reports **one of sixteen** snapshots changed, `Instagram_feed2.html`. `Instagram_feed1.html` holds only a 125% reel and is untouched, as are all fourteen post and modal pages -- which is the part of that run worth having, because it is what proves the four rules reach nothing they were not aimed at. The changed properties are exactly the ones these rules set (`max-width`, the two margin longhands, `padding-bottom`, `position`, `max-height`, `object-fit`) plus the heights they cascade into, and there is no `font-size`, `line-height` or `zoom` anywhere in the list.
+
+  **What that run does NOT show is the rule working**, and the numbers make it look worse than it is. The saved page has no poster and no video source, so the landscape reel falls back to 300x150 and the feed shortens by 286.6px. That is the snapshot, not the rule -- see `Not proven` below.
 
 `verify.py` also had to be repaired to run at all: `find_snapshot()` still looked for `Instagram (*).html`, which stopped existing when the feed captures were renamed to `Instagram_feed<n>.html`, so its three browser checks had been failing outright. It now takes the newest `Instagram_feed*.html`, which is also what puts the landscape reel in front of it.
 
-### Not proven
+### Confirmed live
 
-**The height rule is untested against Instagram itself.** SingleFile strips video sources, so `videoWidth` is 0 on every snapshot here and a rule keyed on intrinsic size measures nothing -- applied to the snapshot as saved, the box collapses to 0x0. The figures above come from the same snapshot with a synthetic poster of known pixel size patched onto every `<video>`, since a `<video>` takes its intrinsic dimensions from its poster frame when no video data has loaded. That exercises the real markup and the real cascade against a ratio we control, which proves the mechanism. It does not prove the two things only the live site can: that Instagram's poster and video agree with the `padding-bottom` it wrote alongside them, and that the poster is present early enough that the box is never briefly zero-height while the feed is scrolling. Both are with the user for a live check.
+**The height rule could not be tested offline at all, and was checked on the live site instead.** SingleFile strips video sources and replaces the poster with `data:,`, so `videoWidth` is 0 on every snapshot here and a rule keyed on intrinsic size has nothing to read: applied to `Instagram_feed2.html` as saved, the landscape reel renders 300x150, the CSS default object size for a replaced element with no intrinsic dimensions. The figures above come from the same snapshot with a synthetic poster of known pixel size patched onto every `<video>`, since a `<video>` takes its intrinsic dimensions from its poster frame when no video data has loaded. That exercises the real markup and the real cascade against a ratio we control, which proves the mechanism and nothing further.
+
+Two things only the live site could settle: whether Instagram's poster and video agree with the `padding-bottom` it writes alongside them, and whether the poster arrives early enough that the reel is never briefly drawn at the 300x150 fallback while the feed scrolls. **Checked on the live feed on 2026-09-11: a 4:3 reel at `padding-bottom: 75%` and a 16:9 reel at `padding-bottom: 56.25%` both render correctly, and no 300x150 appeared.** Two distinct landscape ratios, neither of them the 56.4263% the snapshot holds -- 56.25% is the round 16:9 -- so this is confirmation against ratios the rule was never tuned to. A live reel shallower than 4:3, or between these two, is still unchecked; nothing in the rule distinguishes them, since it reads no ratio and does no arithmetic.
 
 ## 2026.9.11.6
 
