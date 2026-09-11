@@ -24,7 +24,7 @@ Chromium is not restricted, and the style was confirmed working under Stylus for
 
 ## Install
 
-Published to [userstyles.world](https://userstyles.world/user/boneyland) under the user `boneyland`. Install from there and Stylus will offer updates as new versions are published.
+Published to [userstyles.world](https://userstyles.world/style/30052/instagram-desktop-site) under the name `Instagram Desktop Site`. Install from there and Stylus will offer updates as new versions are published.
 
 To install this copy instead, open `Instagram.user.css` raw and Stylus will intercept it. Note that a manual install carries no update URL.
 
@@ -58,7 +58,6 @@ The two post-page settings are coupled: enlarging a carousel needs the column wi
 - **Post-page defaults are calibrated against one aspect ratio**, a 3:4 carousel. A squarer or wider post starts wider and will want a wider column at the same scale.
 - **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
 - **Only the feed reserves space for the left nav rail.** The rail is fixed-positioned and takes no layout space of its own, so the feed keeps 72px clear on the left to stay out from under it. Post and reel pages do not: they centre in the window, and a width setting taken past the window's width minus 144px will run under the rail there.
-- **A mixed carousel** — photo and video slides in one post — is the one page shape nothing has been written against, for want of a capture of one.
 
 ## Repository layout
 

@@ -2,9 +2,53 @@
 
 ## 2026.9.12.1
 
-Compared against `2026.9.11.7`, the entry below. None of these has been published, so an installer coming from `20260910` receives all eight.
+Compared against `20260910`, the version currently published to userstyles.world -- so this entry is the whole of what an installer receives, not one step of it. Seven unpublished versions sit between the two, `2026.9.11.1` through `2026.9.11.7` and this one. Each keeps its own entry below, with the measurements and the reasoning; this entry is their sum and the place to start.
 
-### Fixed
+### Settings
+
+Thirteen settings become fourteen -- two added and one removed, net plus one. (2026.9.11.4 records the count as going from fifteen to fourteen; that was against the unpublished `2026.9.11.3`, which had briefly carried two more.) Saved values carry over, and no default moves except the one noted, so an existing install renders the same until a setting is touched.
+
+| | Setting |
+| --- | --- |
+| Removed | `u-post-media-scale`, "Post page: enlarge a multi-photo post by". It did nothing -- Instagram re-derives a carousel slide's width from its container, so scaling the container up and the slides down cancelled exactly. See 2026.9.11.4. |
+| Added | `u-feed-sidebar`, "Feed: the right-hand sidebar". It had been hidden unconditionally since before this changelog started. See 2026.9.11.2. |
+| Added | `u-post-photo-width`, "Post page: total width of a square post or a tall single photo, and caption". See 2026.9.11.1 and 2026.9.11.3. |
+| Relabelled | `u-media-max-height`, `u-post-width` and `u-reel-width` -- each now names the pages or the media it actually governs. |
+| Range widened | `u-media-column` 90 to 100 and `u-carousel-scale-max` 3 to 6 (2026.9.11.4); `u-feed-reel-width` 1200 to 2000. |
+| Default moved | `u-reel-media-info`, the caption column, 429px to 380px. |
+
+### What an installer receives
+
+**Feed.**
+
+- The feed no longer runs underneath the left nav rail, which had made the like button under it unclickable. `Feed: width of the feed` is now a share of the window *beside* the rail. (2026.9.11.5)
+- The right-hand sidebar can be brought back. (2026.9.11.2)
+- Feed media rules no longer reach a post opened as a floating modal, where a feed setting had been capping the photo's height. (2026.9.11.1)
+- `Feed: never let a photo or reel get taller than` limits reels, which its old label had always implied and which it had never done. (2026.9.11.1)
+- A reel is no longer cropped left and right when `Feed: never let a reel get wider than` is set low. (2026.9.11.6)
+- Both reel settings now reach a **landscape** reel, which had ignored them entirely. (2026.9.11.7)
+- A reel whose box ratio ends in `125` is no longer misclassified as a flattened portrait one. (this version, below)
+- `Text: spacing between lines` now reaches everything `Text: size` reaches. (2026.9.11.1)
+
+**Post pages.**
+
+- Single photos on `/p/<id>/` and `/<user>/p/<id>/` are sized consistently instead of coming out at wildly different widths depending on shape, and landscape ones keep Instagram's own layout while gaining the caption column. (2026.9.11.1)
+- Square carousels are handled; they had reached no carousel rule at all. (2026.9.11.3)
+- Reels reached through either `/p/` path are enlarged. This widened the middle `@-moz-document` condition from `[^/]+/reel/` to `(p|[^/]+/p|[^/]+/reel)/`. (2026.9.11.1)
+- The post-page carousel `zoom` rule is gone, with its setting. (2026.9.11.4)
+
+**Reel pages.**
+
+- The comments panel on `/reels/<id>/` takes both text settings -- the known gap recorded in 20260910. (2026.9.11.1)
+
+**Internal, with no rendering change.**
+
+- Every comment outside the metadata block was stripped; `docs/rule-notes.md` is now the only record of why a rule is shaped as it is. (2026.9.11.1)
+- `@description` no longer states the browser floor, which lives in `README.md` and `USw-notes.md`. (2026.9.11.2)
+- `verify.py` resolves `select` defaults, and its snapshot lookup was repaired after the feed captures were renamed. (2026.9.11.2, 2026.9.11.7)
+- Several wrong claims were removed from `docs/rule-notes.md`. (2026.9.11.4)
+
+### This version's own change
 
 - **A feed reel whose box ratio happens to end in `125` was treated as a portrait reel and cropped.** Found while answering a question about where Instagram's percentages come from; the bug is older than the landscape work and was inherited by it.
 
