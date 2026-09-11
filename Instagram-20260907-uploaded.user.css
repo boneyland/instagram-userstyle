@@ -1,0 +1,285 @@
+/* ==UserStyle==
+@name         Instagram Desktop site 
+@version      20260907
+@namespace    userstyles.world/user/
+@description  Two-column feed, non-carousel images appear larger. Portrait reels in feed are less cropped. Widened reel in www.instagram.com/<user>/reel/<id>/ pages.
+@author       boneyland
+@license      No License
+==/UserStyle== */
+@-moz-document domain("instagram.com") {
+
+	/* ------------------------------------------------------------------
+     Tuning. Change these, not the rules below.
+
+     These live in the domain() block, which also matches reel pages, so
+     the regexp block at the bottom can read them too.
+     ------------------------------------------------------------------ */
+	:root {
+		--feed-min: 780px;	      	     /* narrowest the feed column goes on a wide screen */
+		--feed-width: 80% !important;	   /* preferred feed width. NOTE: this name collides with Instagram's own --feed-width (470px, declared on :root), 		                                         so this is an override of theirs, not a private variable. The !important is what wins that collision.
+		                                    Rename it if you only meant it for the rules in this file. */
+		--feed-max: 90%;		             /* widest the feed column goes          */
+		--media-column: 55%;		         /* share of the row the media may take  */
+		--media-max-height: 900px;	     /* cap on how tall any image gets       */
+		--caption-min: 320px;	  	       /* caption wraps below media under this */
+		--feed-reel-width: 550px;        /* cap on width of portrait reels in the feed, adjusting this will also affect how much of
+		                                    portrait reels are cropped. Adjust together with --media-column and  */
+		
+		/*  The following variables are only for Reel pages with URL https://www.instagram.com/<user>/reel/<id>/  */
+		--reel-width: 950px;             /* reel width on the reel page          */
+		--media-info: 429px !important;  /* caption and comments column width on the reel page.
+		                                    Overrides Instagram's own --media-info variable
+		                                    !important is needed to win that collision.       */
+	}
+
+	/* ------------------------------------------------------------------
+     Type
+     ------------------------------------------------------------------ */
+	:root,
+	article {
+		--system-14-font-size: 16px;
+		--system-14-line-height: 1.2;
+	}
+
+	article ._aacl._aaco._aacu._aacx._aad7._aade,
+	article ._acan,
+	article .x1f6kntn {
+		font-size: var(--system-14-font-size);
+		line-height: var(--system-14-line-height);
+		overflow-wrap: anywhere;
+	}
+
+	/* ------------------------------------------------------------------
+     Chrome: right rail and nav
+     ------------------------------------------------------------------ */
+	.x6bx242 {
+		/* suggestions rail */
+		display: none;
+	}
+
+	._aa4c {
+		--nav-narrow-width: 0px;
+		--nav-medium-width: 0px;
+		--nav-wide-width: 0px;
+	}
+
+	.x1o5hw5a.x1o5hw5a,
+	.xw2csxc {
+		--nav-narrow-width: 72px;
+		--nav-medium-width: 72px;
+	}
+
+	.xaeubzz.xaeubzz {
+		--nav-wide-width: 72px;
+	}
+
+	.x1o5hw5a.x1o5hw5a:hover {
+		--nav-medium-width: 244px;
+	}
+
+	.xaeubzz.xaeubzz:hover {
+		--nav-wide-width: 335px;
+	}
+
+	svg[aria-label="Instagram"] {
+		width: min(103px, 100%);
+	}
+
+	/* ------------------------------------------------------------------
+     Feed width
+     ------------------------------------------------------------------ */
+	@media screen and (min-width: 800px) {
+
+		.x17snn68.x17snn68 {
+			width: 100%;
+		}
+
+		.x17snn68.x17snn68 .html-div > .xw2csxc:nth-child(1) {
+			padding-left: var(--nav-medium-width);
+			/* settings page */
+		}
+
+		/* The feed column. */
+		main > div > div[style*="630px"],
+		main > div > div[style*="max-width"] {
+			min-width: var(--feed-min) !important;
+			width: var(--feed-width) !important;
+			max-width: var(--feed-max) !important;
+		}
+
+		/* Post column inside the feed column. */
+		main [style*="--x-width"][style*="470px"],
+		.xmnaoh6 + div > div {
+			--x-width: 100% !important;
+			width: 100% !important;
+			max-width: 100% !important;
+		}
+
+		/* The media wrapper, present in EVERY post regardless of type, is what caps media at 468px.
+		   Two exclusions:
+         :not(li *)     - inside a carousel this is the slide frame; the <li> takes its width from it,
+		                      so setting it to 100% makes both resolve to zero.
+         :not(:has(ul)) - a carousel's outer wrapper. Widening it while its slides stay 468px just
+		                      adds empty space around the media. Carousels stay 468px whole. */
+		main div[style*="min(470px, 100vw)"]:not(li *):not(:has(ul)) {
+			width: 100% !important;
+			max-width: 100% !important;
+		}
+
+		/* Stories tray spans the full width. */
+		main > div > div > .xw7yly9 > div {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+
+		main > div > div > .xw7yly9 > div > div {
+			box-sizing: border-box;
+		}
+
+		main > div > div > .xw7yly9 > div > div:first-child {
+			flex: 100%;
+		}
+
+		/* ----------------------------------------------------------------
+       Two-column post: header full width, then media beside caption.
+
+       `:has(> div:nth-child(3))` is the guard. Reels overlay their
+       header on the video and so have a single child here; without the
+       guard every nth-last-child rule below lands on the wrong element.
+       ---------------------------------------------------------------- */
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			border-bottom: 1px solid rgb(var(--ig-separator));
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) > div {
+			box-sizing: border-box;
+			min-width: 0;
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) > div:nth-last-child(3) {
+			flex: 1 1 100%;
+			/* header row */
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) > div:nth-last-child(2) {
+			flex: 1 1 var(--media-column);
+			max-width: var(--media-column);
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) > div:last-child {
+			flex: 1 1 var(--caption-min);
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) > div:last-child .html-div:not(.x1nhvcw1) {
+			width: 100%;
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:not(.xtcbf50):has(> div:nth-child(3)) > div:last-child > div {
+			padding: 0 10px;
+		}
+
+		article:has(a[href*="/reels/"]):not([role="dialog"] *) > .xdt5ytf {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: flex-start;
+		}
+
+		article:has(a[href*="/reels/"]):not([role="dialog"] *) > .xdt5ytf > div:first-child {
+			flex: 1 1 var(--media-column);
+			max-width: var(--media-column);
+			min-width: 0;
+		}
+
+		article:has(a[href*="/reels/"]):not([role="dialog"] *) > .xdt5ytf > div:last-child {
+			flex: 1 1 var(--caption-min);
+			min-width: 0;
+			padding: 0 10px;
+		}
+	}  
+    
+  /* Feed reels: Instagram caps the box at 125% (4:5). Shallower ratios pass through at their true value (4:3 reels are 75%),
+	   so those can be matched on padding-bottom as usual. Anything taller than 4:5, which is nearly all reels now, is flattened to
+		 125% and cropped with object-fit: cover (3:4 sources are rendered at 125% rather than their natural 133.33%), so 9:16
+		 cannot be told from a genuine 4:5 here.
+		 
+	   Capping the 125% boxes crops 9:16 a little further while leaving the 75% boxes, and so 4:3 reels, untouched.
+	   :has(video) keeps this off same-ratio photo posts. */
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom: 125%"] {
+    max-width: var(--feed-reel-width);
+	  margin-inline: auto;
+		max-height: var(--media-max-height) !important;
+  }
+	
+	/* ------------------------------------------------------------------
+     Media
+
+     Images: Instagram reserves space with a `padding-bottom: <percent>`
+     box and absolutely positions the image inside it with
+     object-fit: cover. Collapsing the box and letting the image size
+     itself removes both the crop and the letterboxing.
+
+     Video boxes are never collapsed. A <video preload="none"> has no
+     intrinsic dimensions until its metadata loads, so collapsing its
+     box gives it zero height, and with nothing rendered it never loads.
+     Reels in particular disappear entirely. They keep Instagram's box
+     and are only re-fitted inside it (see object-fit below).
+
+     Carousels are excluded throughout: their slides sit in an
+     absolutely positioned overlay on an empty aspect-ratio spacer, so
+     collapsing anything in that chain makes the slides vanish.
+     ------------------------------------------------------------------ */
+	/* blurred/black plate drawn behind non-filling media */
+	article img[aria-hidden="true"] {
+		display: none !important;
+	}
+
+	/* Ads and Reels wrap their media in a shrink-to-fit anchor
+     (class x4gyw5p). Left as-is, the anchor sizes from its contents
+     while the contents size from the anchor, and the pair resolves to
+     0x0. Matching on any padding-bottom box catches both. */
+	article a:has(div[style*="padding-bottom"]) {
+		display: block !important;
+		width: 100% !important;
+	}
+
+	article div[style*="padding-bottom"]:has(> img):not(li *) {
+		padding-bottom: 0 !important;
+		height: auto !important;
+		background: transparent !important;
+	}
+
+	article div[style*="padding-bottom"]:has(> img):not(li *) > img {
+		position: static !important;
+		display: block;
+		width: 100% !important;
+		height: auto !important;
+		max-height: var(--media-max-height) !important;
+		object-fit: contain !important;
+		margin: 0 auto;
+	}
+}
+
+/* --------------------------------------------------------------------
+   Reel pages with URL https://www.instagram.com/<user>/reel/<id>/
+   Scoped by URL, not by selector. Otherwise, the padding-bottom rule below would hit portrait reels in the feed as well.
+   -------------------------------------------------------------------- */
+@-moz-document regexp("https://www\\.instagram\\.com/[^/]+/reel/.*") {
+
+	/* The reel column. Instagram writes --x-maxWidth inline as a computed value derived from the viewport,
+	   so the number differs between screens and zoom levels. Matching the property name and using the
+	   descendant video as the guard survives that; matching the number would not. */
+	main div[style*="--x-maxWidth"]:has(> div > div > div video) {
+		--x-maxWidth: min(100%, var(--reel-width)) !important;
+	}
+
+	div[style*="padding-bottom: 177"] {
+		padding-bottom: 0 !important;
+		height: min(95vh, 950px) !important;
+	}
+}

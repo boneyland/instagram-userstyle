@@ -1,0 +1,74 @@
+---
+name: shipping-a-release
+description: Use when publishing a new version of this userstyle to userstyles.world — cutting a release, bumping @version, updating the live style, or writing release notes for installers.
+---
+
+# Shipping a release to userstyles.world
+
+The style is published to [userstyles.world](https://userstyles.world/) (USw)
+under the user `boneyland`. Installers get auto-updates from USw once a new
+version is live.
+
+**Publishing is entirely manual.** The project is not a git repository and the
+source is not hosted anywhere. Every release so far has been uploaded, typed or
+pasted directly into the USw website. There is no external git remote and no
+mirroring — see Mirroring below before suggesting otherwise.
+
+## Before shipping
+
+1. **Verify.** `python3 verify.py Instagram.user.css` — exits non-zero on
+   failure.
+
+   For a refactor that should change nothing, use the two-file form:
+   `python3 verify.py old.user.css Instagram.user.css`. The current release is
+   kept locally as `Instagram-20260910-uploaded.user.css`, so that check can be
+   run against what is actually live. Keep the habit of copying the working file
+   before a refactor anyway, for changes that sit on top of unreleased work.
+
+2. **Bump `@version`.** CalVer plus a revision: `YYYY.M.D.R`. The revision
+   starts at **1** and counts further releases on the same day —
+   `2026.9.10.1`, `2026.9.10.2`. A new day starts over at `.1`.
+
+   **Never write `.0`.** Stylus compares the dot-separated parts across the
+   *longer* of the two versions and reads a missing part as 0 — `cmpver.js`,
+   `Math.max(len1, len2)` with `parseInt(a, 10) || 0`, read from the Stylus
+   source on 2026-09-10. So `2026.9.10.0` and `2026.9.10` compare **equal** and
+   no update is offered. `2026.9.10.1` compares greater, and a later date still
+   beats any revision of an earlier one: `2026.9.11.1` > `2026.9.10.5`.
+
+   That same rule is what lets the two spellings coexist, so releases published
+   before this scheme keep their plain `YYYY.M.D` and are not renamed.
+
+   Bump it on every published change, so installers see an update. *(The
+   comparator above is Stylus's, verified. That the USw update feed is what
+   drives it has not been verified here.)*
+
+3. **Check `@description`.** It states the browser requirement (currently
+   Firefox 126+, for `:has()` and `zoom`). Raising the floor means editing it.
+   It names Firefox only; see Open items in `CLAUDE.md` on the Chromium claim.
+
+4. **Write the notes.** Two files, two audiences:
+
+   - `CHANGELOG.md` — release notes per `@version`, and the record of what was
+     removed and why. Mechanism and internals belong here.
+   - `USw-notes.md` — the user-facing version, for pasting into the Notes field
+     on USw. Mechanism and internals stay out of it.
+
+   The style file itself carries no changelog.
+
+## Never add `@updateURL`
+
+USw overwrites it, to avoid tracking and broken URLs. Installers get
+auto-updates from USw automatically, so the field buys nothing and is replaced
+regardless.
+
+## Mirroring — not used here
+
+USw can pull edits automatically instead of taking them by hand: host the raw
+file, set it as the source, and tick **Mirror source code updates**. It then
+polls every four hours at :04, and mirrors **only when `@version` differs** —
+with an unchanged version it silently skips, with no error.
+
+None of that is set up for this project, and nothing depends on it. Recorded so
+the option is not mistaken for the current workflow, and so the silent-skip
+behaviour is known if it is ever turned on.

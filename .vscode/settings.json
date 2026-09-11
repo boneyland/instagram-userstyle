@@ -1,0 +1,19 @@
+{
+    // These names are placeholder files created by Claude Code's Bash sandbox,
+    // which denies writes to auto-loaded config paths by bind-mounting them
+    // read-only. A bind mount needs an existing target, so any denied path that
+    // is missing gets created as an empty 0-byte file and left behind.
+    // They are not part of this project. Deleting them only helps until the
+    // next session recreates them, so they are hidden instead.
+    "files.exclude": {
+        ".bash_profile": true,
+        ".bashrc": true,
+        ".gitconfig": true,
+        ".gitmodules": true,
+        ".idea": true,
+        ".profile": true,
+        ".ripgreprc": true,
+        ".zprofile": true,
+        ".zshrc": true
+    }
+}
