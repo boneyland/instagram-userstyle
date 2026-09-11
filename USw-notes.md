@@ -1,49 +1,34 @@
-## Changelog
+Rebuilds Instagram's desktop layout around the media instead of a fixed 470px column: posts become two columns, photos are shown uncropped, and carousels and reels are enlarged to fill the space that gains.
 
-### 2026.9.11
+**[Full documentation, the settings table and the complete changelog are on GitHub.](https://github.com/boneyland/instagram-userstyle)** The following is a summary.
 
-#### Added
+## What it changes
 
-- **Single photos on `instagram.com/p/…` and `instagram.com/<user>/p/…` are now sized consistently.** Instagram sizes them two different ways depending on the photo's shape: a tall photo came out small — smaller than a carousel on the same page — while a square one filled the whole window and kept growing on a wider screen. Both now come out the same width, and within a few pixels of a carousel.
-- One new setting, **Post page: total width of a single photo and caption**, default 1100px. Lower it for a smaller photo, raise it for a bigger one. Unlike the multi-photo settings it needs no second setting to go with it, and it works the same whatever shape the photo is.
-- Popups are unaffected, as are carousels, reels, and the feed.
+- **Feed.** The feed widens to a share of the window, and each post becomes two columns — media on the left, caption and comments beside it — stacking again when the window is too narrow. Photos lose Instagram's crop-to-fill box and the blurred plate behind them, carousels are enlarged, and portrait reels get back more of their height. The right-hand sidebar is hidden, and a setting brings it back.
+- **Post pages.** Carousels are enlarged by widening the column they sit in; the media takes whatever the caption column leaves it. Single photos, which Instagram lays out two different ways depending on their shape, are handled by capping that same column instead: the photo takes whatever width the caption column leaves it, and that comes out the same whether the photo is tall or square. Landscape photos are left alone, because Instagram's own layout for them is already good.
+- **Reel pages.** The 9:16 box is collapsed to the video's real height and the caption column is widened. Reels reached through a post URL get the same treatment.
+- **Text.** Size and line spacing of usernames, captions and comments, everywhere above. Both start at Instagram's own values, so nothing changes until you move a setting.
 
-#### Changed
+Fourteen settings in all, adjustable from the Stylus settings pane. [The table of defaults is in the README.](https://github.com/boneyland/instagram-userstyle#settings)
 
-- **"Post page: total width of photo and caption together" is now "Post page: total width of a multi-photo post and caption."** With a single-photo setting beside it the old name was ambiguous. Only the name changed; your saved value carries over.
+## Requirements
 
-### 2026.9.10.1
+[Stylus](https://add0n.com/stylus.html), and **Firefox 126 or newer** — `:has()` needs 121 and `zoom` needs 126. On an older build those declarations are dropped silently rather than erroring, so the style only partly applies and carousels stay at Instagram's size.
 
-#### Fixed
+Chromium-based browsers are not restricted, and the style was confirmed working under Stylus for ungoogled-chromium. No version floor has been established there, so treat it as lightly tested.
 
-- **Post popups are left alone again.** Opening a post as a popup — clicking one in the feed, or from a profile grid — put the photo through the feed's sizing, so the maximum height setting was shortening it even though it is a feed setting. Popups now keep Instagram's own layout. Posts opened as a full page are unaffected, as before.
-- **The maximum height setting now works on reels**, not just photos. It had never had any effect on a reel, whatever you set it to. It is now called **Feed: never let a photo or reel get taller than**, and your saved value carries over.
-- At the default of 900px nothing changes unless your window is wider than about 1640px. Below roughly 690px the reel also starts getting narrower as it gets shorter, since the two are tied together by the reel's shape.
-- Carousels are not limited by this setting. Only single photos and reels are.
-- **Line spacing now works everywhere the text size setting works.** On `instagram.com/reels/<id>/` it had no effect at all, and elsewhere it reached less of the text than the size setting did — usernames, timestamps and other short labels changed size but kept Instagram's spacing. Both settings now move together.
-- **The comments panel on `instagram.com/reels/<id>/` now follows the text settings too.** This was listed as a known gap in the previous release; it is closed.
+## What's new
 
-### 2026.9.10
+Everything below has accumulated since version `2026.9.10`, the last version published here. [The full changelog, with the reasoning behind each change, is on GitHub.](https://github.com/boneyland/instagram-userstyle/blob/main/CHANGELOG.md)
 
-#### Added
-
-- Carousels are now enlarged along with everything else in the feed. Previously only single images grew and carousels stayed at Instagram's default size.
-- Every setting is now adjustable from Stylus' own options screen — feed width, how the row splits between media and caption, text size and line height, maximum media height, how much carousels scale, and the reel page's widths. No more editing the CSS by hand.
-- Carousels are now enlarged on individual post pages too, both `instagram.com/p/…` and `instagram.com/<user>/p/…`. These pages now use the same caption column width as reel pages, and there are two new settings: **Post page: enlarge a multi-photo post by**, and **Post page: total width of photo and caption together**. Captions and comments keep their own text size. Reels on those pages are not affected yet.
-- Those two settings work together: if you raise how much the post is enlarged, raise the total width with it, or the photo will outgrow the space beside the caption. Wide posts need more total width than tall ones at the same setting.
-- Every setting has been renamed to say plainly what it does, so you no longer have to read the stylesheet to tell them apart.
-
-#### Changed
-
-- Now requires **Firefox 126 or newer**.
-- Text size and line height now start at Instagram's own 14px and 18px, instead of being forced to 16px with tighter line spacing. Raise them in the settings if you preferred the larger text. They affect usernames, captions and comments in the feed, on individual post pages, and on reel pages. One known gap: the comments panel on `instagram.com/reels/<id>/` keeps Instagram's own size.
-
-#### Fixed
-
-- Widening now applies reliably. Depending on how Instagram rendered a page, some posts and reels could keep their original size.
-- The reel page's caption column width no longer affects post popups.
-- Carousels opened at a reel URL are no longer made *smaller* than without the style. The widened caption column was taking space that nothing gave back.
-
-#### Removed
-
-- The collapsing left sidebar. Instagram stopped using the variables it worked through, so it had no effect any more.
+- **Both feed reel settings now reach a landscape reel.** **Feed: never let a reel get wider than** and **Feed: never let a photo or reel get taller than** only ever applied to a portrait one, so a landscape reel filled the whole media column however low you set them. It now follows both, at its own proportions and uncropped on either axis.
+- **Reels are no longer cropped left and right when you narrow them.** Lowering **Feed: never let a reel get wider than** used to take width off a reel while leaving its height alone, so past a point the sides were cut off instead of the top and bottom. The height now comes down with the width, and a tall reel taken below that point is shown whole — uncropped on both axes. Nothing changes at the default or above it.
+- **The feed no longer slides underneath the left nav rail.** Widening the feed used to run it under the rail, and because the rail expands when the pointer reaches it, the like button underneath could not be clicked at all. The feed now keeps 72px clear on the left. One consequence worth knowing: **Feed: width of the feed** is now a share of the window *beside* the rail rather than of the whole window, so the feed sits a little narrower and centred in the space that is actually free. At 100 it now fills everything to the right of the rail.
+- **The right-hand sidebar can be brought back**, through a new setting, **Feed: the right-hand sidebar**. It is still hidden by default. Worth knowing: that sidebar is not only "Suggested for you" — your own profile block and the account switcher live in it too, which is the usual reason to want it back.
+- **Single photos on `instagram.com/p/…` and `instagram.com/<user>/p/…` no longer come out at wildly different widths.** Instagram lays them out two ways depending on the photo's shape: a tall one came out smaller than a carousel on the same page, while a square one filled the window and kept growing on a wider screen. Two settings now decide the result — **Post page: total width of a square post or a tall single photo, and caption** (new, default 1150px) and the caption column width beside it. The same pair now also covers a **square multi-photo post**, which Instagram builds the same way and which the style previously left untouched, so a square post lands at one width whether it holds one photo or several. The photo itself is not sized directly; it takes the space between the two, which comes out the same width whatever its shape, and within a few pixels of a carousel. Landscape photos keep Instagram's own layout, which is already good.
+- **Post popups are left alone again.** Opening a post as a popup — from the feed, or from a profile grid — put the photo through the feed's sizing, so a feed setting was shortening it. Popups now keep Instagram's layout. Posts opened as a full page are unaffected.
+- **The maximum height setting works on reels now**, not just photos. It had never had any effect on a reel, whatever you set it to, and is now called **Feed: never let a photo or reel get taller than**.
+- **Line spacing reaches everywhere the text size setting reaches.** On `instagram.com/reels/<id>/` it had no effect at all, and elsewhere short labels changed size but kept Instagram's spacing. The comments panel on that page follows both settings too — the known gap from the last release is closed.
+- **One setting was removed: "Post page: enlarge a multi-photo post by".** It turned out to do nothing. Instagram recalculates a carousel's slide size from the space it is given, so scaling that space up and the slides down cancelled out exactly — the only visible effect was a flash when you moved the slider. The setting that actually sizes a post-page carousel is **Post page: total width of a multi-photo post and caption**, which is unchanged.
+- **Two feed sliders go further than they did.** The photo's share of a post can now be taken to the full width, and the carousel enlargement ceiling is raised from 3x to 6x to match — on a wide monitor the old ceiling was holding carousels below the width the feed had been widened to hold. Both defaults are unchanged, so nothing moves until you move it.
+- **Two settings were renamed** for clarity, and a couple of defaults were adjusted. Saved values carry over, and every default is only a starting point — set them to whatever suits your screen.

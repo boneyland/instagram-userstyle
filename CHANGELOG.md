@@ -1,6 +1,181 @@
 # Changelog
 
-## 2026.9.11
+## 2026.9.11.7
+
+Compared against `2026.9.11.6`, the entry below. None of these has been published, so an installer coming from `20260910` receives all seven.
+
+### Fixed
+
+- **"Feed: never let a reel get wider than" and "Feed: never let a photo or reel get taller than" now reach a landscape reel.** Reported from the live site. Neither setting had any effect on one: both feed reel rules were keyed on the literal `125%`, and a landscape reel's box carries its own ratio instead.
+
+  **What was measured.** `Instagram_feed2.html`, captured 2026-09-11, is the first snapshot here to contain a landscape reel -- article 4, `padding-bottom:56.4263%`, a 16:9. At a 1638px window with everything default it rendered **687x387.7**: the full media column, against a width setting of 550. The 125% rules matched nothing on it, so the only thing reaching it was the two-column layout rule, which is keyed on the article rather than on the box.
+
+  **The width setting.** One new rule caps the anchor -- the containing block the percentage resolves against, so the box shortens with it rather than being narrowed without being shortened. The arithmetic is simpler than in the 125% case and deliberately so: a 125% box may hold a source taller than 125%, so its width and height need separate terms, but a non-125% box carries the source's TRUE ratio, so capping the anchor at the setting gives a box exactly that wide by that times the ratio tall, with nothing for `object-fit: cover` to crop. Measured after: 550 gives 550x310.3, 400 gives 400x225.7, 300 gives 300x169.3, every one at ratio 0.5642 against the source's 0.5643. Both 125% reels in the same snapshot are unchanged at every setting swept.
+
+  **The height setting needed a different mechanism, and this is the part to read before touching it.** A percentage-padding box's height is `ratio x containing block width`, and CSS cannot read that ratio -- it exists only as a substring of an inline style. For 125% the ratio is a constant and the cap is `H / 1.25`; for a landscape reel there is no divisor to write down. Confirmed that the obvious alternative does not exist: `max-height` on the box is inert with and without `box-sizing: border-box`, measured at 200px on the 56.4263% box, rendered height 387.7px both ways, because a border box cannot shrink below its own padding.
+
+  So three rules stop using the padding box as the ratio carrier and use the video's own intrinsic size instead -- the same mechanism the feed photo rules already use for `img`. The box gets `padding-bottom: 0`, `height: auto` and `width: fit-content`; its one direct child, an `inset: 0` overlay, is made static so the box has something in flow to take its height from; the video gets `width: auto`, `height: auto`, `max-width: 100%` and `max-height` from the setting. With both dimensions auto the replaced-element min/max algorithm satisfies both caps and preserves the ratio by itself, so the style contains no arithmetic and the result is exact for any ratio rather than for an enumerated set of them.
+
+  `width: fit-content` is load-bearing, not cosmetic. When the height cap binds the video is narrower than the column, and without it the box stays column-width with the video centred inside, leaving Instagram's own overlays -- the progress bar, the mute button -- positioned against the box's edges rather than the video's. Measured at 1200/300 on a 16:9 source: without it, box 687x300, video 532.9x300, mute button 38px clear of the video's right edge; with it, box 532.9x300 and both overlays exactly on the video.
+
+  **Measured.** Article 4, 1638px window, box/video: 16:9 at 550/900 gives 550x309.6; at 550/200 gives 355.3x200; at 1200/300 gives 532.9x300; at 300/900 gives 300x168.9. A 1:1 source at 1200/300 gives 300x300, a 4:3 source 400x300. Every one holds its ratio to four decimals, and the 125% reels never move.
+
+### Verification
+
+`verify.py` passes all four checks at 42 rules and 142 declarations, against 39 and 125 before -- exactly the three new rules and their seventeen longhands, so Firefox dropped nothing. `scoped.py --diff` against `2026.9.11.6` reports **one** snapshot changed, `Instagram_feed2.html`, and no `font-size`, `line-height` or `zoom` anywhere in it; `Instagram_feed1.html` holds only a 125% reel and is untouched, as are all fourteen post and modal pages.
+
+`verify.py` also had to be repaired to run at all: `find_snapshot()` still looked for `Instagram (*).html`, which stopped existing when the feed captures were renamed to `Instagram_feed<n>.html`, so its three browser checks had been failing outright. It now takes the newest `Instagram_feed*.html`, which is also what puts the landscape reel in front of it.
+
+### Not proven
+
+**The height rule is untested against Instagram itself.** SingleFile strips video sources, so `videoWidth` is 0 on every snapshot here and a rule keyed on intrinsic size measures nothing -- applied to the snapshot as saved, the box collapses to 0x0. The figures above come from the same snapshot with a synthetic poster of known pixel size patched onto every `<video>`, since a `<video>` takes its intrinsic dimensions from its poster frame when no video data has loaded. That exercises the real markup and the real cascade against a ratio we control, which proves the mechanism. It does not prove the two things only the live site can: that Instagram's poster and video agree with the `padding-bottom` it wrote alongside them, and that the poster is present early enough that the box is never briefly zero-height while the feed is scrolling. Both are with the user for a live check.
+
+## 2026.9.11.6
+
+Compared against `2026.9.11.5`, the entry below. None of these has been published, so an installer coming from `20260910` receives all six.
+
+### Fixed
+
+- **A feed reel is no longer cropped left and right when "Feed: never let a reel get wider than" is set low.** Reported from the live site. The setting narrowed the box without shortening it, and past a point the box became narrower in ratio than the reel inside it, so `object-fit: cover` started cutting the sides instead of the top and bottom.
+
+  **Why.** The box's height is `padding-bottom: 125%`, which resolves against the CONTAINING BLOCK's width -- the anchor -- not against the box's own. So the box is `min(setting, anchor)` wide and `1.25 x anchor` tall, and only the width followed the setting down. Measured on the saved feed at a 1638px window with everything else default: 550 gave 550x858.8, a ratio of 0.6405; 470 gave 470x858.8, 0.5473; 400 gave 400x858.8, 0.4658; 300 gave 300x858.8, 0.3493. A 9:16 reel needs 0.5625, so everything from about 483px down was losing its sides.
+
+  **What changed.** One declaration. The anchor's `max-width` is now a `min()` of the height cap it already carried and a second term, `calc(var(--u-feed-reel-width) * 16 / 9 / 1.25)`. Shortening the anchor shortens the box, so the box's ratio cannot fall below 16:9 inverted: where the anchor is already narrower than the setting the box is a true 125% and the term is slack, and where it is wider the box is `setting` wide and the term holds its height at or under `setting x 16/9`. The two constants are left unreduced because they are two separate facts -- 16/9 is the tallest source a 125% box can hold, 1.25 is the box's own padding.
+
+  **The effect on the settings.** Nothing moves at or above the default. At 550 on a 1638px window the new term is 782px against the old cap's 720px and the column's 687px, so the column still binds and the box renders 550x858.8 exactly as before. Below the knee the anchor now shortens with the setting: 470, 400 and 300 give 470x835.5, 400x711.1 and 300x533.3, all exactly 0.5625, where a 9:16 reel is not cropped on either axis. "Feed: never let a photo or reel get taller than" is unaffected and still composes -- measured with both moved at once, 550/400 gives 320x400, 300/400 gives 300x400, 1200/300 gives 240x300, 300/2000 gives 300x533.3.
+
+  **The floor is 9:16, not 4:5, and that is a choice rather than a measurement.** Instagram flattens anything taller than 4:5 into the same 125% box, so a genuine 4:5 reel cannot be told from a 9:16 one here and no box is safe for both: one taller than 4:5 reveals more of a 9:16 and crops the sides off a true 4:5. Only a true 125% box is safe for everything, and it would cost the "less-cropped portrait reels" the style's description leads with. Put to the user with both trade-offs on 2026-09-11 and declined, so a genuinely 4:5 reel is still side-cropped whenever the box is taller than 4:5 -- unchanged from what the default already did. The floor is exact only while 9:16 is the tallest reel Instagram accepts, which comes from its upload limits and from every reel snapshot here being 177.778%, not from a capture of a taller one.
+
+  **Verification.** `verify.py` passes all four checks with the declaration count unchanged at 122, so Firefox kept the nested `min(calc(), calc())` rather than dropping it. `scoped.py --diff` against `2026.9.11.5` reports **zero** properties moving on all fifteen snapshots, standard and custom alike -- which is the result to expect and not a sign the change did nothing: it runs every snapshot at the default settings, where the new term is slack by design. The change only renders below the knee, and both scripts are blind to that because neither varies a setting. What measured it was a one-off probe in the same headless Firefox: the saved feed, the style applied, `--u-feed-reel-width` forced to each value in turn and the box's rendered box read back. The before and after figures above are that probe's output.
+
+  **Not done: 4:3 reels.** A 4:3 reel keeps Instagram's own 75% box, which no rule here touches, so it was never at risk of this and is not covered by the floor either.
+
+## 2026.9.11.5
+
+Compared against `2026.9.11.4`, the entry below. Neither has been published, so an installer coming from `20260910` receives both, along with `.1` to `.3`.
+
+### Fixed
+
+- **The feed no longer runs underneath the left nav rail.** Reported against "Feed: width of the feed" and "Feed: width of the photo" both at 100, where the feed filled the window, the rail covered the left edge of every post, and the like button could not be clicked at all: the rail expands on hover, so the pointer widened it before arriving. 72px is now reserved on the left of the feed area.
+
+  **Why nothing reserved it already.** The rail is a fixed-positioned sibling of the whole content wrapper -- `position:fixed; top:0; height:100vh; width:fit-content; z-index:10` in the saved feed's own CSS -- so it takes no layout space and `main` starts at x=0. Instagram's own feed column is 630px and centred, so it never reaches the left 72px and the collision never shows on a stock page. Every width this style offers is measured from the same x=0, so the wider the feed, the further under the rail it goes.
+
+  **What changed.** One new rule, on the feed column's parent: `box-sizing: border-box`, `padding-left: 72px`, `justify-content: safe center`. Its selector is the existing feed-width rule's selector lifted one level, so the reach is identical -- 1 match on the saved feed, 0 on all thirteen other snapshots. `--u-media-px` restates the feed width as `100vw - 72px` to match.
+
+  **The effect on the settings.** "Feed: width of the feed" is now a percentage of the window minus the rail rather than of the whole window, and Instagram's own centring then centres the feed in that free area. At the default 80 on a 1638px window the feed column moves from x=164 w=1310 to x=229 w=1253 -- 57px narrower, sitting in the middle of the space the rail leaves. At 100 it runs x=72 to 1638 instead of x=0 to 1638. Existing installs see this without touching a setting.
+
+  **Two details that had to be measured rather than assumed.** The parent carries Instagram's `xh8yej3`, which is `width: 100%`, so under the default `content-box` the padding is added to the 100% rather than taken out of it: the first attempt made the parent 1710px wide in a 1638px window and pushed the feed off the right edge instead of clear of the rail. `box-sizing: border-box` is what makes the reservation a reservation. And `justify-content: safe center` handles the case padding cannot: when "Feed: never let the feed get narrower than" exceeds the free width the column overflows, and a centred flex item overflows in both directions -- at a 900px window with that setting at its 1600px maximum the column's left edge landed at x=-350, further under the rail than before. `safe` makes an overflowing item flush-start instead, giving x=72.
+
+  **Verification.** `verify.py` passes all four checks, and the parse census goes from 119 declarations to 122 -- the three this rule adds, so Firefox kept `safe center` rather than dropping it. `scoped.py --diff` against the previous file reports the feed snapshot moving 1469 standard properties and all thirteen other snapshots moving **zero**, custom-only, the single `--u-media-px` token set and inherited and never read there.
+
+  **The feed's own diff includes `font-size` (81 elements) and `line-height` (79), which `scoped.py` flags as the signature of a container holding text being resized by mistake. Here it is not.** Those elements are exactly the 81 that also show `--u-carousel-scale` changing: they are the zoomed carousel subtree, and `zoom` scales every length inside it. The scale moved because the media column really is narrower now, and it moved by the right amount. At a 1638px window and the defaults, the column was 1310 x 0.55 - 12 = 708.5px, giving a ratio of 1.514 clamped to the 1.5 ceiling and media 702px wide. It is now 1252.8 x 0.55 - 12 = 677px, a ratio of 1.447 that no longer reaches the ceiling, and media 677px -- measured at 702 and 677 respectively, and 677 fits the 689px the column now leaves.
+
+  **Not done: the post and reel pages.** They centre in the window and only reach the rail when their width setting exceeds the window minus 144px -- `--u-post-photo-width` at 2000 on a 1600px window, say. That is a different rule on different containers and no measurement of it exists, so nothing was written for it. The feed's reservation cannot help there: its selector matches 0 elements on all thirteen post, reel and modal snapshots, which is deliberate.
+
+  **RTL is not handled.** `padding-left` is a deliberate no-claim; which side the rail takes under `dir="rtl"` was not checked, and no snapshot of it exists.
+
+## 2026.9.11.4
+
+Compared against `2026.9.11.3`, the entry below. None of these has been published, so an installer coming from `20260910` receives all four.
+
+### Removed
+
+- **The post-page carousel `zoom` rule and its setting, "Post page: enlarge a multi-photo post by" (`u-post-media-scale`, default 1.5).** Both are gone. The rule did nothing visible, and this was measured live on 2026-09-11 on a 3:4 carousel, on both `/p/<id>/` and `/<user>/p/<id>/`: moving the setting anywhere between 1 and 2 produces a brief flash and the media then settles at exactly the size it already was. Carousel sliding was unaffected throughout.
+
+  **Why it never worked, and why the snapshots said otherwise.** Each carousel slide frame carries an inline literal `width:<n>px` that Instagram's JS derives from the container, with the slide offsets written as multiples of it. `zoom: 1.5` makes the container report 513 CSS px where it reported 770; Instagram fills 513; zoom scales the result back to 770 — the same rendered size as `zoom: 1`. The flash is the interval between the zoom applying to the old width and Instagram re-deriving the new one.
+
+  SingleFile freezes that inline width, so on a saved page the slide cannot re-derive and `zoom` appears to enlarge it. **Every measurement that made this rule look effective came from that freeze** — the "673x898 media at the default scale", the claim that the column must hold `caption + natural media width x scale`, and the coupling between this setting and `--u-post-width`. `docs/rule-notes.md` now marks them as artifacts rather than repeating them.
+
+  The same re-derivation is what makes the square-carousel cap added in `2026.9.11.3` correct with no zoom at all, and it was that change's live check which raised the question about this one.
+
+  **What actually sizes a 3:4 carousel is unchanged**: `--u-post-width` caps the column, the caption column takes `--u-reel-media-info`, and Instagram fills the difference — measured at 785 -> 356, 950 -> 521, 1200 -> 771. Removing the zoom therefore changes nothing a user sees on a live page, beyond ending the flash and letting Instagram lay the media out at 770 CSS px one-to-one instead of at 513 upscaled.
+
+  **Both verification scripts disagree with this on the saved pages, and are expected to.** `scoped.py --diff` reports the two 3:4 carousel snapshots moving 329 standard properties each, because their frozen 449px slides lose the 1.5 and render at 449 instead of 674; the square carousel is untouched at 0, and the remaining eleven snapshots show custom-only drift — 1668 to 16534 elements each losing the `--u-post-media-scale` declaration, with zero standard properties behind it. `verify.py`'s two-file mode fails for a second and separate reason: it flattens every `@-moz-document` block unconditionally, so the removed rule was reaching the feed snapshot, where `rule-notes.md` already recorded it matching a 470x3644 region. That accounts for its 2357 standard-property mismatches, all on the feed, a page the rule never touched in the shipped style. Neither result is a regression; they are the freeze and the flattening. The live behaviour is the measurement that counts here.
+
+  A `zoom` rule must not be reintroduced on either carousel shape without a live measurement first.
+
+  **The feed's `zoom` rule was checked on the same day and KEPT.** `--u-carousel-scale-max` does resize feed carousels, tapering off above roughly 1.6 because the scale is `min(setting, fit ratio)` and past that point the ratio is the smaller term -- the clamp working as designed, the setting being a ceiling. The difference is that the feed rule zooms the carousel wrapper without stretching it (the widening rule beside it is guarded `:not(:has(ul))`), so the container still measures 468px and Instagram still derives 468px slides. Resize the container as well, as the post-page rule did, and the re-derivation cancels the zoom. That is the test to apply to any future zoom.
+
+### Changed
+
+- **Two feed setting ranges were widened. No default moved, so an existing install sees nothing change until a setting is touched.**
+
+  **"Feed: width of the photo, as a % of the post"** (`u-media-column`) now reaches **100** rather than 90, so it can be taken to the full width of the feed when "Feed: width of the feed" is also at 100. Nothing new happens at 100: the caption already wrapped below the media at 90, because `--u-caption-min` (320px default) cannot fit in the remaining tenth, so this extends an existing single-column layout rather than introducing one. Measured on the saved feed at a 1729px viewport: at 55 the media is 761px with the caption beside it, at 90 it is 1245px with the caption wrapped below, at 100 it is 1383px with the caption wrapped below.
+
+  **"Feed: never enlarge a multi-photo post by more than"** (`u-carousel-scale-max`) now reaches **6** rather than 3. The first change is what forced this one: the scale applied is `min(setting, fit ratio)`, and with `u-media-column` at 100 and `u-feed-width` at 100 the fit ratio is **3.67 at a 1729px viewport** and **5.44 at 2560px** — so the old ceiling of 3 began binding on an ordinary window, capping carousels below the width the feed had been widened to hold. 6 covers roughly a 2820px viewport at those maxima; 3840px reaches about 8.2 and is still capped.
+
+- **A wrong claim was removed from `docs/rule-notes.md`: that the ceiling protects against upscaling.** It was justified there as guarding a "468px-wide slide source". 468px is the layout box the feed gives a slide, not the resolution of the image in it. A feed carousel slide inspected live in DevTools on 2026-09-11 held a **3277×4096** image in that 468px box, so a zoom well past 3 upscales nothing. The note now says what the ceiling is really for, which is user preference. The saved feed could not have answered this: SingleFile rewrites every srcset into a data URI and headless Firefox decodes none of them, so every `naturalWidth` reads 0.
+
+- **The explanation of why the feed's `zoom` works and the post page's did not was corrected.** It had been recorded, marked as inference, as "the feed rule leaves the container's layout width alone, so Instagram still derives 468px slides". The conclusion was right and the mechanism was wrong: **nothing is derived on the feed at all.** Live DevTools shows the div inside each feed `li` carrying `width: calc(-2px + min(470px, 100vw))` — a static CSS expression referencing nothing the style touches — while the same div on a post page carries a literal `width:1262px` that Instagram's JS computed from the container. That is the whole difference, and it is now the test to apply before adding any zoom: read how the slide's width is written first.
+
+- **`docs/rule-notes.md` no longer claims the two post-page carousel settings are coupled.** They never were; the coupling was inferred from the frozen snapshot. The note for the surviving column rule now states plainly that Instagram fills the media area the column leaves, and the note for the square-carousel cap points at it as the shared pattern rather than treating itself as the exception.
+
+- **`README.md` and `USw-notes.md` drop the removed setting**, taking the count from fifteen to fourteen.
+
+## 2026.9.11.3
+
+Compared against `2026.9.11.2`, the entry below. Neither had been published, so an installer coming from `20260910` receives this with the rest.
+
+### Added
+
+- **Square carousels on a post page are handled.** A snapshot of one was captured on 2026-09-11, and it turned out the style reached the page with nothing but the two text rules from the `domain()` block -- the caption column width, the column cap and the media scale all missed it.
+
+  The reason is the one already documented for single photos, and it applies to carousels identically: Instagram gives a 3:4 post the class `.xf68679` and an inline `--x-maxWidth:min(100%,785px)` on its column, and gives a square post **neither**. Every carousel rule in the post block was guarded on `--x-maxWidth`, so a square carousel matched none of them. Measured: `main div[style*="--x-maxWidth"]` counts **0** on the square carousel snapshot and 1 on each 3:4 one.
+
+  So a square carousel is now capped the way a square single photo is -- `max-width` on the column, reading **`--u-post-photo-width`**, deliberately the same setting the square single photo uses so the two land on the same width. At the defaults, 1638px window: column 1598 -> 1150, caption 335 -> 380, media area 1263 -> 770, which is where the square single photo lands from the same settings.
+
+  The guard is `:not([style*="--x-maxWidth"])` on the element **itself**, not `:not(:has(...))`. The token is an inline style on `.xvc5jky` directly, so the `:has()` spelling matches nothing and would have capped the 3:4 carousels too, putting `--u-post-photo-width` in a fight with `--u-post-width`.
+
+### Changed
+
+- **The carousel caption-column override moved from `:root` to the column container.** It was `:root:has(main div[style*="--x-maxWidth"] li[style*="translateX"]) { --media-info: ... !important }` and is now `main > div > div.xvc5jky:has(li[style*="translateX"]) { --media-info: ... }` -- the form `CLAUDE.md` asks for, and no longer `!important`.
+
+  The `!important` is genuinely unnecessary rather than merely dropped. Instagram declares `--media-info` on `:root`, and `._aa4c`, its other declaring element, is not on the path between this container and `.x4h1yfo` (`width: var(--media-info)`) -- checked on all three carousel snapshots. A declaration on the container therefore beats the inherited one outright: importance only breaks ties within one element's cascade, and nothing else declares the token on that element.
+
+  This is what lets the setting reach a square carousel, whose column has no `--x-maxWidth` for the old guard to find. It also removes a latent hazard: the old `:root` guard **also matched the saved feed**, where `main div[style*="--x-maxWidth"]` is present. Nothing reads `--media-info` there so it never rendered, but it was kept harmless only by the URL scoping -- the same shape of trap the reel block's `:root` rule still carries.
+
+  `scoped.py --diff` over all fourteen snapshots: the two 3:4 carousels move **712 and 735 custom properties and zero standard ones** -- the token relocating with nothing rendering differently -- the square carousel moves 2711 standard properties, and the other **eleven snapshots do not change at all**, the modal and all four single photos included. No `font-size`, `line-height` or `zoom` among the moved properties.
+
+### Not done
+
+- **No zoom rule for the square carousel**, though one was asked for — and, as it turns out, none is needed.
+
+  `zoom` is the only lever that resizes a carousel slide, which is why the 3:4 rule uses one: each slide frame carries an inline literal `width:<n>px` with the slide offsets written as multiples of it, and `zoom` scales both by the same factor so alignment survives. The setting that exists could not have supplied a usable value here anyway — `--u-post-media-scale` has a **minimum of 1**, so it can only enlarge, and a square carousel's slide already arrives at the full content width. Measured on the snapshot: the 1.5 default takes the slide from 1262 to 1893 inside a 770px viewport, strictly worse than leaving it alone.
+
+  **Confirmed live on 2026-09-11**, which settled the question the snapshot could not: Instagram **re-derives** the slide width and the offsets from the container. With the style applied, the slides resize correctly at every value of `--u-post-photo-width` and each lands accurately in its frame — the same behaviour unstyled Instagram shows when the viewport is resized. Capping the container is therefore the entire job, and a zoom would only fight it.
+
+  A `container-type: inline-size` + `tan(atan2())` derived-zoom version was built and measured before that check, and is deliberately not in the style: it hit a zoom/`cqw` feedback loop, computing 0.63 where 0.61 was wanted, and it reconstructed the very number SingleFile freezes, so no offline test could have validated it. Recorded so it is not attempted again.
+
+  Related artifact, recorded so it is not mistaken for a bug: on the **saved** square-carousel page the cap narrows the container while the frozen slide stays 1262, so any measurement taken there reports the slide overflowing its 770px viewport by 493px. That is a property of the capture, not of the live page.
+
+
+## 2026.9.11.2
+
+Compared against `2026.9.11.1`, the entry below. Neither has been published, so an installer coming from `20260910` receives both.
+
+### Added
+
+- **The right-hand sidebar is a setting now rather than unconditional.** It had been hidden outright since before this changelog starts. The rule is unchanged in shape — one declaration on `.x6bx242` — but the value comes from a setting, **"Feed: the right-hand sidebar (your profile, the account switcher, suggestions)"**, defaulting to **Hidden**. An existing install therefore sees nothing change until the setting is moved.
+
+  **The setting is a select, not a checkbox, and the two options are the two `display` values themselves — `none` and `block`.** A Stylus checkbox's value is `1` or `0`, and no CSS property takes a number for "hidden", so driving the rule from a checkbox would have meant `/*[[...]]*/` preprocessor substitution — a mechanism nothing else in this style uses, and one that leaves the raw file unparseable at that spot, which both `verify.py` and `scoped.py` read directly.
+
+  **`block` is measured, not assumed.** `.x6bx242` is one of Instagram's atomic classes and carries exactly one declaration, `width: var(--feed-sidebar-width)`. The element wearing it is `<div class="x1dr59a3 x13vifvy x7vhb2i x6bx242">`, whose other three classes are `height:100vh`, `top:0` and `padding-inline-start:64px` — no `display` among them. With no stylesheet applied the element computes `display: block`. Headless Firefox at 1638×900, one match, 230 descendants: stock `block`, Hidden `none`, Shown `block`.
+
+  The class is feed-only: two occurrences in the saved feed — Instagram's own CSS, and that element — and zero in the twelve other snapshots. It stays in the `domain()` block unscoped, and needs no `[role="dialog"]` guard because it is not keyed on `article`.
+
+  At the default the change is inert. `verify.py` against the previous file reports **zero** standard-property differences across all 1668 elements; the only drift is `--u-feed-sidebar` itself, which is set on `:root`, inherited everywhere and read by one element. Flipped to Shown it moves 2913 standard properties — the rail and the reflow around it. The two harness failures that accompany a run like this are structural to adding any variable at all: one extra declaration in the `:root` block `var_defaults()` builds (119 → 120), and custom-property drift on every element.
+
+### Removed
+
+- **`@description` no longer states the browser requirement.** It ended `Requires Firefox 126+ (:has() and zoom).`; it now ends at the layout summary. The requirement itself is unchanged — the floor is still Firefox 126, `:has()` needing 121 and `zoom` needing 126 — and it is stated where a reader looks for it rather than in a one-line blurb: `README.md` gives it a "Requirements" heading of its own, alongside Stylus and the Chromium caveat. Do not re-add it to `@description`.
+
+  `USw-notes.md` was rewritten in the same pass and now carries a Requirements heading of its own, so the statement a userstyles.world visitor sees is no longer buried in an old changelog entry.
+
+### Changed
+
+- **`verify.py` resolves `select` defaults.** `var_defaults()` knew `range`, `number`, `text` and `color` only, so a `select` variable would have gone undeclared and every `var()` reading it would have been invalid at computed-value time — the check would have passed while testing nothing. It now reads both spellings `usercss-meta` accepts (a list of bare values, and a map of `"key:Label"` to value), takes the entry marked with a trailing `*` as the default, and falls back to the first entry when none is marked.
+
+## 2026.9.11.1
 
 Compared against `2026.9.10.1`, the entry below. Neither has been published, so an installer coming from `20260910` receives both.
 
@@ -24,7 +199,7 @@ Compared against `2026.9.10.1`, the entry below. Neither has been published, so 
 
   **No `zoom`, unlike the carousel rule beside it.** A single photo's `padding-bottom` box takes its width from the column, so the media is the column minus the caption, linearly: measured at 900/1102/1150/1300 with the caption at 429, the media came out 470/672/721/964 wide. Nothing has to be scaled and no aspect ratio is matched, so unlike the carousel settings this is not calibrated against one ratio.
 
-  One new setting, **"Post page: total width of a single photo and caption"**, default **1100px**. The number comes from 429 + 673 — the caption column plus the width a carousel's media reaches at the default scale — rounded down to 1100 because a range setting's default must be a whole number of steps above its minimum, and 1102 is not. `verify.py` caught that; `usercss-meta` rejects the style outright rather than clamping. The 2px are immaterial.
+  One new setting, **"Post page: total width of a tall or square single photo and caption"**, which shipped at **1100px** and now stands at 1150. The default is a picked compromise rather than a derived number, and the setting is the user's to move. One constraint on any value chosen, because it is a trap rather than a preference: a range setting's default must be a whole number of steps above its minimum, and `usercss-meta` rejects the style outright rather than clamping. `verify.py` catches it.
 
   Result at the defaults, against the carousel for reference:
 

@@ -55,7 +55,28 @@ def var_defaults(css):
             out.append(f"--{name}: {nums[0]}{units[0] if units else ''};")
         else:
             out.append(f"--{name}: {raw.strip(chr(34))};")
+    for m in re.finditer(r'@var\s+select\s+([\w-]+)\s+"[^"]*"\s+(\{.*?\}|\[.*?\])',
+                         css, flags=re.S):
+        out.append(f"--{m.group(1)}: {select_default(m.group(2))};")
     return ":root{\n" + "\n".join(out) + "\n}\n"
+
+
+def select_default(block):
+    """The option a select variable starts on.
+
+    Both spellings usercss-meta accepts are handled: a list of bare values,
+    and a map of "key:Label" to value. The default is the entry marked with a
+    trailing "*" on either side of the pair, and the first entry when none is.
+    """
+    quoted = re.findall(r'"((?:[^"\\]|\\.)*)"', block)
+    if block.lstrip().startswith('{'):
+        pairs = list(zip(quoted[::2], quoted[1::2]))
+    else:
+        pairs = [(v, v) for v in quoted]
+    for key, value in pairs:
+        if key.endswith('*') or value.endswith('*'):
+            return value.rstrip('*')
+    return pairs[0][1].rstrip('*') if pairs else ''
 
 
 def strip_wrappers(css):
@@ -312,16 +333,18 @@ PAGE_JS = r"""
 
 
 def find_snapshot():
-    for f in sorted(os.listdir(SNAPSHOTS)):
-        if f.startswith("Instagram (") and f.endswith(".html"):
-            return os.path.join(SNAPSHOTS, f)
-    return None
+    """The feed snapshot to render against -- the newest by name, so a freshly
+    captured Instagram_feed<n>.html is picked up without editing this."""
+    feeds = [f for f in sorted(os.listdir(SNAPSHOTS))
+             if f.endswith(".html")
+             and (f.startswith("Instagram_feed") or f.startswith("Instagram ("))]
+    return os.path.join(SNAPSHOTS, feeds[-1]) if feeds else None
 
 
 def run_browser(sheets, workdir):
     snap = find_snapshot()
     if not snap:
-        print(f"  x FAIL  no 'Instagram (*).html' snapshot found in {SNAPSHOTS}")
+        print(f"  x FAIL  no 'Instagram_feed*.html' snapshot found in {SNAPSHOTS}")
         return None
     html = open(snap, encoding="utf-8", errors="replace").read()
     declared = sorted({m for s in sheets.values()

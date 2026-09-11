@@ -23,7 +23,9 @@ Stylus turns each knob in the header into a custom property on :root and concate
 
 ## `--u-media-px` (declared on `:root`)
 
-Width available to the media column, as a real length -- the carousel scale below is a unitless ratio, and CSS can only build one out of two lengths. Restating the feed width against the viewport is exact, not approximate: the nav rail is fixed-positioned and takes no layout space, so the feed column's containing block is the full viewport. The 12px is the scrollbar, which Firefox counts in vw but cannot lay out in; it is a constant because a percentage inside atan2() would not resolve.
+Width available to the media column, as a real length -- the carousel scale below is a unitless ratio, and CSS can only build one out of two lengths. The feed width has to be restated against the viewport because a percentage inside atan2() would not resolve, which is also why the 12px scrollbar allowance is a constant.
+
+`100vw - 72px`, not `100vw`, since the nav-rail reservation below. The rail is fixed-positioned and takes no layout space, so nothing subtracts it automatically: the reservation takes it out of the feed's containing block by hand, and this restatement has to take it out by hand to match. Leave it at `100vw` and the estimate over-states the media column by up to 72px, scaling feed carousels larger than the space they have.
 
 
 ## `article, main, [role="dialog"]`
@@ -61,6 +63,31 @@ Captions sit in a narrow column once the two-column layout below kicks in, so lo
 
 The right-hand rail. Despite the name this is not only "Suggested for you" -- the same container holds your own profile block and the account switcher, so hiding it removes those too. That is intended; reach the switcher through the nav instead.
 
+Hiding it is now a setting rather than unconditional, and the setting is a select whose two options are the two `display` values themselves -- `none` and `block` -- rather than a checkbox. A checkbox's value is `1` or `0`, and no property takes a number for "hidden", so a checkbox would have needed `/*[[...]]*/` preprocessor substitution, which nothing else in this style uses and which would leave the raw file unparseable at that spot for both verification scripts.
+
+`block` is the measured stock value, not a guess. `.x6bx242` is one of Instagram's atomic classes, and it carries a single declaration: `width: var(--feed-sidebar-width)`. The element wearing it in the saved feed is `<div class="x1dr59a3 x13vifvy x7vhb2i x6bx242">`, and those three siblings are `height:100vh`, `top:0` and `padding-inline-start:64px` -- no `display` among them. With no stylesheet applied at all the element computes `display: block` (a `div`, and a flex item of its parent besides, so blockified either way). Measured in headless Firefox at 1638x900: stock `block`, Hidden `none`, Shown `block`, one match with 230 descendants.
+
+The class is feed-only. It occurs twice in the saved feed -- once in Instagram's own CSS, once on that element -- and in none of the twelve other snapshots, which is why the rule sits in the `domain()` block with no URL scoping and needs no dialog guard: it is not keyed on `article`.
+
+Because the rule is a single declaration on a named container, the two states cost nothing to compare. At the default, Hidden, the style is byte-for-byte equivalent in effect to the unconditional `display: none` it replaced: `verify.py` reports zero standard-property differences, and the only drift is `--u-feed-sidebar` itself, set and inherited on all 1668 elements and read by one. Flipped to Shown it moves 2913 standard properties, which is the rail and the reflow around it.
+
+
+## `main > div:has(> div[style*="630px"]), main > div:has(> div[style*="max-width"])`
+
+Reserves the left nav rail's 72px. The rail is a fixed-positioned sibling of the entire content wrapper -- `position:fixed; top:0; height:100vh; width:fit-content; z-index:10`, read out of the saved feed's own CSS -- so it takes no layout space at all and `main` begins at x=0. Instagram gets away with that because its own feed column is 630px and centred, and so never reaches the left 72px. Widen the feed and it slides underneath. The result is worse than cosmetic: the rail expands on hover, so a like button underneath it cannot be reached at all, because the pointer expands the rail before it arrives.
+
+The selector is the feed-column rule below lifted one level, to that column's parent. It has the same reach -- 1 match on the saved feed, 0 on all thirteen other snapshots -- so the reservation cannot leak onto a post, reel or modal page.
+
+Reserving the space on the parent rather than on the feed column is what makes everything downstream fall out for free. The `width: calc(var(--u-feed-width) * 1%)` below is a percentage of this element's content box, so every feed-width value is now measured against the window minus the rail, and Instagram's own `justify-content: center` centres the result inside that same free area instead of inside the window.
+
+`box-sizing: border-box` is load-bearing, and this was measured rather than assumed. The element carries Instagram's `xh8yej3`, which is `width: 100%`; under the default `content-box` the padding is added to that 100% instead of taken out of it, so the feed shifts right by 72px and overflows the right edge by the same amount. Measured at a 1638px window: parent 1710 wide against a 1638 viewport, feed column x=236 right=1710.
+
+`justify-content: safe center` covers the one case the padding does not. When `--u-feed-min` exceeds the free width the column overflows, and a centred flex item overflows in BOTH directions: at a 900px window with the minimum at its 1600px maximum, the column's left edge lands at x=-350 -- back under the rail and off the screen entirely. `safe` falls back to flush-start whenever the item overflows, which puts it at x=72. It needs Firefox 63, well under this style's 126 floor, and Firefox keeps the declaration: the parse census goes from 119 declarations to 122, the three this rule adds.
+
+Measured on the saved feed at a 1638px window, feed width 100 and media column 100 -- the settings that exposed the problem: the column ran x=0 to 1638 before, x=72 to 1638 after. At the default 80 it is x=229 w=1253, against x=164 w=1310 before: narrower by the rail, centred in what is left.
+
+72px is hard-coded rather than exposed as a setting, by choice. It appears twice -- here and in `--u-media-px` -- and both have to move together. RTL is not handled and was not checked; `padding-left` makes no claim about which side the rail takes there.
+
 
 ## `main > div > div[style*="630px"], main > div > div[style*="max-width"]`
 
@@ -86,6 +113,30 @@ zoom, not transform: scale(). zoom reflows, so the wrapper genuinely occupies it
 The scale is a ratio of two lengths. CSS cannot divide by a length, so tan(atan2(a, b)) is used to get a/b unitless. (100% / 468px is rejected by Firefox.)
 
 :not([style*="--x-width"]) excludes the post column, whose inline style also contains min(470px, 100vw) and which also :has(ul); without it the carousel would be enlarged twice.
+
+**Confirmed working live on 2026-09-11**, and worth recording because the post-page zoom rule removed on the same day was confirmed NOT to work. Moving the setting resizes feed carousels; above roughly 1.6 it stops doing anything, and between 1.5 and 1.6 the effect tapers. That is the clamp, not a fault: the scale is min(setting, fit ratio), so once the setting passes the ratio the ratio is what applies. The setting is a ceiling, which is what its label says.
+
+WHY THIS ONE WORKS AND THE POST-PAGE ONE DID NOT. The two pages size a slide by completely different means, seen directly in live DevTools on 2026-09-11. On the FEED, the div inside each `li` carries `width: calc(-2px + min(470px, 100vw))` -- a static CSS expression, not a number anyone computed. It does not reference the container this rule zooms, so there is nothing for Instagram to re-derive: the slide is 468px whatever happens around it, and `zoom` simply scales the result. The offsets are literal px written by JS, `translateX(2339px)` and so on, but they are multiples of that same fixed 468, so they stay in step.
+
+On a POST PAGE the same div carries `width:1262px` or `width:449px` -- a literal px that Instagram's JS derived FROM THE CONTAINER. The post-page rule widened that container via `--x-maxWidth`, so the slide was re-derived to fill it and the zoom cancelled out exactly.
+
+An earlier version of this note explained the difference as "the feed rule leaves the container's layout width alone, so Instagram still derives 468px slides". The conclusion was right and the mechanism was wrong -- nothing is derived on the feed at all. It was marked as inference at the time; the DevTools capture replaced it.
+
+WHY THE CEILING'S RANGE IS 1-6, AND MUST NOT BE NARROWED. The setting only binds when it is BELOW the fit ratio, and that ratio scales with the viewport and with --u-media-column and --u-feed-width. Measured on the saved feed with the ceiling lifted out of the way, so min() resolves to the fit ratio alone:
+
+At the default --u-media-column 55 and --u-feed-width 80: 1.60 at a 1729px viewport, 2.00 at 2155px, 2.38 at 2560px, 3.00 at 3218px, 3.58 at 3840px.
+
+With --u-media-column 90 and --u-feed-width 100: 3.05 at 1600px, 3.67 at 1920px, 4.90 at 2560px.
+
+With both at 100: 3.67 at 1729px, 5.44 at 2560px.
+
+So a ceiling of 2 would become the binding constraint past about 2155px at stock settings -- an ordinary 2560x1440 monitor is well past it -- and the former ceiling of 3 bound at 1729px once --u-media-column reached 100. It was raised to 6 on 2026-09-11 in the same pass that took --u-media-column's own maximum from 90 to 100, because that change is what put the ratio above 3 on an ordinary window. 6 covers roughly a 2820px viewport at those maxima; a 3840px one reaches about 8.2 and is still capped.
+
+DO NOT justify the ceiling as protection against upscaling. An earlier version of this note did, on the reasoning that "the slide source is 468px wide" -- that was wrong, and is the kind of claim this file exists to stop. 468px is the LAYOUT BOX the feed gives a slide, not the resolution of the image in it. Instagram serves originals far larger, ON THE FEED: a carousel slide inspected live in DevTools on 2026-09-11 held a 3277x4096 image, in a 468px box. So a zoom well past 3 upscales nothing there. The saved feed cannot show this -- SingleFile rewrites every srcset into a data URI and headless Firefox decodes none of them, so every naturalWidth reads 0 -- which is why it took a live check.
+
+What the ceiling is actually for is user preference: it is a "never enlarge by more than" guard, INERT by design whenever the fit ratio is the smaller term, which is why it can look like it does nothing on a narrower screen. That is not a fault to fix.
+
+So the principle, for any zoom added here later: **check how the slide's width is written before reaching for zoom.** If it is a CSS expression, as on the feed, zoom scales it and nothing fights back. If it is a literal px derived from the container, as on a post page, then resizing that container makes Instagram recompute the slide and the zoom buys nothing. Both halves were measured live on 2026-09-11, the feed half by reading the attribute in DevTools.
 
 
 ## `main > div > div > .xw7yly9 > div`
@@ -126,7 +177,7 @@ Reels have no header row -- it is overlaid on the video -- so the media/caption 
 
 Feed reels: Instagram flattens anything taller than 4:5 into a 125% box and crops it with object-fit: cover (3:4 sources render at 125%, not their natural 133.33%), so 9:16 cannot be told from a genuine 4:5 here. Shallower ratios pass through at their true value -- 4:3 reels are 75% -- so capping the 125% boxes crops 9:16 a little further and leaves 4:3 untouched. The a[href*="/reels/"] guard on the article is what keeps this off same-ratio photo posts; the media element itself is not inspected.
 
-One thing to know before moving a cap onto this element: max-width narrows the box without shortening it. The height is `padding-bottom: 125%`, and a percentage padding resolves against the CONTAINING BLOCK's width, not the element's own, so the height stays whatever the column gives it. Measured on the saved feed at a 1638px window, default settings: 550 wide by 898 tall. The height cap below is on the anchor for exactly this reason.
+One thing to know before moving a cap onto this element: max-width narrows the box without shortening it. The height is `padding-bottom: 125%`, and a percentage padding resolves against the CONTAINING BLOCK's width, not the element's own, so the height stays whatever the column gives it. Measured on the saved feed at a 1638px window, default settings: 550 wide by 858.8 tall, in an anchor 687 wide. (The 898 recorded here before 2026.9.11.5 was measured before the nav rail reservation narrowed the feed column.) Both caps below are on the anchor for exactly this reason -- the one that limits the box's height, and the one that stops it cropping the reel's sides.
 
 
 ## `article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"][style*="125%"])`
@@ -135,11 +186,47 @@ The height cap goes on the anchor, never on the box above. For the reason just g
 
 Capping the anchor works because the anchor IS the containing block the 125% resolves against, so height/1.25 is the width that produces it. Measured: the cap at 400px/1.25 gave a box of 320 by 400.
 
-Lowering this setting therefore changes the box's shape, not just its size: below about 690px the anchor becomes the binding constraint and the box returns to a true 125%, where above that it is 550 wide by whatever the column gives (898 at the default). How much of a flattened source that reveals or hides cannot be worked out from here -- per the note above, the box does not tell you the source's real ratio. At the 900px default the cap starts binding around a 1640px window, which is where the box first passes 900px tall anyway.
+The second term of the min() is not a height cap at all. It is what keeps the box from cropping the reel LEFT AND RIGHT, and it is the reason the two settings cannot be read independently. Write F for "never let a reel get wider than" and A for the anchor's width: the box is `min(F, A)` wide and `1.25 x A` tall, and the video inside it is `object-fit: cover` filling the box (measured: computed object-fit cover, static position, filling the box's exact pixel size). Cover crops whichever axis the box is short on, so the sides go the moment the box is narrower in ratio than the source. A 9:16 reel needs the box to stay at or above 0.5625; lowering F alone narrows the box without shortening it, which is exactly how it falls through that floor.
 
-Only the 125% reels are capped. A 4:3 reel keeps its own 75% box, which needs a media column near 1200px before it reaches even the 900px default, and no snapshot of one exists to test a second divisor against. The :has() guard is what scopes this to the 125% case; an anchor wrapping any other ratio is left alone.
+Measured on the saved feed before this term existed, 1638px window, everything else default: F=550 gave 550x858.8, ratio 0.6405; F=470 gave 470x858.8, 0.5473; F=400 gave 400x858.8, 0.4658; F=300 gave 300x858.8, 0.3493. Everything from about 483px down was cutting the sides off a 9:16 reel.
+
+Capping A at `F * 16 / 9 / 1.25` makes that impossible. Where A <= F the box is A wide and 1.25A tall, and 1.25 is already below 16/9; where A > F the box is F wide and the cap holds 1.25A at or under 1.7778F. The two constants are written unreduced because they are two separate facts: 16/9 is the tallest source a 125% box can hold, 1.25 is the box's own padding. The same measurements after: 550 unchanged at 0.6405, and 470, 400 and 300 giving 470x835.5, 400x711.1 and 300x533.3 -- all exactly 0.5625. Below the knee the reel is no longer cropped at all, on either axis.
+
+The floor is 9:16 rather than 4:5 deliberately, and the difference is not measurable from the page. Per the note above, a 125% box holds a genuine 4:5 reel and a flattened 9:16 one indistinguishably, so the box cannot be made safe for both: a box taller than 4:5 reveals more of a 9:16 and side-crops a true 4:5, and only a true 125% box is safe for everything. The true-125% option was put to the user on 2026-09-11 with both trade-offs and declined -- it would cost the feature the style's own description leads with -- so a genuinely 4:5 reel is still side-cropped whenever the box is taller than 4:5, as it already was at the default. The floor is exact only while 9:16 is the tallest reel Instagram accepts; that comes from Instagram's upload limits and from every reel snapshot here being 177.778%, not from a capture of a taller one.
+
+What the setting does, then, is change the box's shape and not just its size, in two stages: above the knee the box is F wide by whatever the column gives, and below it the box is F wide by a true 9:16. The height cap composes with it in either stage -- measured with both moved at once: F=550 H=400 gives 320x400 (a true 125%), F=300 H=400 gives 300x400, F=1200 H=300 gives 240x300, F=300 H=2000 gives 300x533.3. Whichever term binds, the ratio never goes below 0.5625.
+
+This rule covers the 125% reels only. Everything else -- a landscape or square reel, whose box carries its true ratio -- is handled by the three rules below, which were added in 2026.9.11.6 after `Instagram_feed2.html` captured the first landscape reel. Until then neither setting reached one at all.
 
 No !important: nothing sets max-width on this anchor -- Instagram computes max-width: none here, and the width: 100% rule below sets width only. Confirmed on the saved feed.
+
+
+## `article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:not([style*="125%"]))`
+
+The width cap for every feed reel that is NOT in a 125% box. Measured in `Instagram_feed2.html`, article 4 is a 16:9 reel at `padding-bottom:56.4263%`; with only the 125% rules in place it rendered 687x387.7 at a 1638px window, ignoring "never let a reel get wider than" entirely because neither of those rules matched it.
+
+The cap goes on the anchor rather than the box for the reason given two sections up -- max-width narrows the box without shortening it -- but the arithmetic here is simpler than in the 125% case, and that is the whole point of splitting them. A 125% box may hold a source taller than 125%, so its width and its height have to be capped by separate terms. A non-125% box carries the source's TRUE ratio, so capping the anchor at F gives a box exactly F wide by F x ratio tall, with nothing for `object-fit: cover` to crop on either axis. Measured after, same reel: F=550 gives 550x310.3, F=400 gives 400x225.7, F=300 gives 300x169.3, all at ratio 0.5642 against the source's 0.5643.
+
+`:not([style*="125%"])` rather than a positive match on the landscape ratios, because there is no list of those to match: 56.4263% is not even a round 16:9. The two spellings are exhaustive between them -- a reel box is either the flattened 125% one or its own ratio -- so the negation is what makes the pair total.
+
+Both 125% reels in the same snapshot are unchanged by this rule at every setting swept: F of 550, 400, 300 and 1200 against H of 900 and 300, byte-identical before and after.
+
+
+## `article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="125%"])` (and its `> div` and `video`)
+
+The height cap for the same reels, and the one rule in this file that CANNOT be checked against a snapshot as saved.
+
+Why it is built differently from everything around it. The height of a percentage-padding box is `ratio x containing block width`, and CSS cannot read that ratio: it exists only as a substring of an inline style. For the 125% boxes the ratio is a known constant and the cap is just `H / 1.25`. For a landscape reel it is whatever Instagram wrote, so there is no divisor to write down. Confirmed that the obvious alternative does not exist: `max-height` on the box is inert, with and without `box-sizing: border-box` -- measured at 200px on the 56.4263% box, rendered height stayed 387.7px both ways, because a border box cannot shrink below its own padding.
+
+So these three rules stop using the padding box as the ratio carrier and use the video's own intrinsic size instead, which is the same mechanism the feed photo rules below already use for `img`. The box gets `padding-bottom: 0` and `height: auto`; its one direct child, an absolutely positioned `inset: 0` overlay, is made static so the box has something in flow to take its height from; and the video gets `width: auto`, `height: auto`, `max-width: 100%` and `max-height: var(--u-media-max-height)`. With both dimensions auto, the replaced-element min/max algorithm satisfies both caps and preserves the ratio on its own -- no arithmetic in the style at all, and it is exact for any ratio rather than for an enumerated set.
+
+`width: fit-content` on the box is not cosmetic. When the height cap binds, the video is narrower than the column, and without it the box stays column-width while the video centres inside it. The overlays Instagram positions against that box -- the progress bar and the mute button -- would then sit against the box's edges instead of the video's. Measured at F=1200 H=300 with a 16:9 source: without fit-content the box was 687x300 with the video 532.9x300 and the mute button 38px clear of the video's right edge; with it the box is 532.9x300, and the overlay and the button land exactly on the video.
+
+Measured, all on article 4 of `Instagram_feed2.html` at a 1638px window, written as `box`/`video`: a 16:9 source at F=550 H=900 gives 550x309.6 with both caps slack on the height; F=550 H=200 gives a box of 355.3x200; F=1200 H=300 gives 532.9x300; F=300 H=900 gives 300x168.9. A 1:1 source at F=1200 H=300 gives 300x300, a 4:3 source at the same settings 400x300. Every one holds the source ratio to four decimals. The 125% reels in the same snapshot do not move.
+
+**How those numbers were obtained, and what they do not prove.** SingleFile strips video sources, so `videoWidth` is 0 on every snapshot here and a rule keyed on intrinsic size measures nothing: applied to the snapshot as saved, the box collapses to 0x0. What was measured instead is the snapshot with a synthetic poster of known pixel size patched onto every `<video>` -- a `<video>` takes its intrinsic dimensions from its poster frame when no video data has loaded, so this exercises the real markup and the real cascade with a ratio we control. That proves the MECHANISM. It does not prove the two things only the live site can: that Instagram's poster and video agree with the `padding-bottom` it wrote alongside them, and that the poster is present early enough that the box is never briefly zero-height while the feed is scrolling. Both were flagged to the user for a live check on 2026-09-11; until that comes back, treat this rule as untested against Instagram rather than as measured.
+
+The `:not([style*="125%"])` guard is what keeps all three off the portrait reels, which must keep their padding box -- the 125% cap depends on it.
 
 
 ## Media (section header)
@@ -215,36 +302,48 @@ Widening the column does not enlarge anything by itself. Forcing --x-maxWidth la
 
 So the column width below is not there to enlarge the media. It is there to make room for it: the media area is the column width minus the caption column, and once the caption is widened to match a reel page the stock 785px no longer fits a zoomed carousel.
 
-Carousels and single photos, which are two different shapes handled by two separate groups of rules below. A reel on one of these URLs is not left stock either -- it is handled by the reel block above, whose URL pattern covers these two paths as well, because a reel here renders the same layout as /<user>/reel/<id>/ down to the pixel.
+Carousels and single photos, which are two different shapes handled by two separate groups of rules below. Each of those two shapes comes in turn in TWO layouts, and the split is the same one both times: Instagram gives a 3:4 post the class `.xf68679` and an inline `--x-maxWidth:min(100%,785px)` on its column, and gives a square post neither. So a square carousel is built like a square single photo, not like a 3:4 carousel, and the token every other rule in this block is guarded on is simply absent from it. A reel on one of these URLs is not left stock either -- it is handled by the reel block above, whose URL pattern covers these two paths as well, because a reel here renders the same layout as /<user>/reel/<id>/ down to the pixel.
 
 Three post shapes, then, sharing two URL patterns, and every rule in both blocks is kept in its own lane by a SELECTOR guard rather than by the URL: a carousel by its slide list, a reel by its video, a single photo by a photo box with neither of those present. Do not loosen one by guesswork; the whole point is that each boundary was measured against every snapshot.
 
 
-## `:root:has(main div[style*="--x-maxWidth"] li[style*="translateX"])`
+## `main > div > div.xvc5jky:has(li[style*="translateX"])`
 
-These pages lay out like a reel page: media and caption side by side inside one column. Stock, that column is 785px and splits 449 media + 335 caption.
+The caption column, for EVERY carousel shape. These pages lay out like a reel page: media and caption side by side inside one column. Stock, a 3:4 column is 785px and splits 449 media + 335 caption; a square column is the whole content area and splits 1262 media + the same 335 caption.
 
-Every rule in this block carries the same carousel guard, `:has(li[style*="translateX"])` -- the slide list only a carousel has. That is what keeps the pair together: widening the caption column is only safe when something widens the media to match, and the zoom rule below cannot match a single-media post. Without the guard, a reel on one of these URLs would take the wider caption column from HERE while the reel block above widened its media as well, and a single-media photo post would take it with nothing widening the media at all -- the second is exactly the bug fixed on reel pages above.
+The reader is one Instagram declaration, `.x4h1yfo { width: var(--media-info) }`, one match per post page. Instagram declares `--media-info` on `:root`, and `._aa4c`, its other declaring element, is not on the path between this container and `.x4h1yfo` -- measured on all three carousel snapshots. So a declaration HERE beats the inherited one on its own and needs no `!important`: importance only breaks ties within one element's cascade, and nothing else declares the token on this element. That is the form CLAUDE.md asks for, and it replaced a `:root:has(...) { ... !important }` rule that did the same job.
+
+The replacement was measured rather than assumed: `scoped.py --diff` reports the two 3:4 carousels moving 712 and 735 CUSTOM properties and ZERO standard ones -- the token relocating from `:root` to the container with nothing rendering differently -- and zero changes of either kind on the other eleven snapshots.
+
+Reselecting it this way fixed two things beyond the move. The old `:root` guard also matched the saved FEED, where `main div[style*="--x-maxWidth"]` is present; nothing reads `--media-info` there so it never rendered, but it was kept harmless only by the URL scoping, the same latent hazard the reel block's `:root` rule still has. And the old guard required `--x-maxWidth`, which a SQUARE carousel does not have, so the setting simply never reached one.
+
+The guard is `:has(li[style*="translateX"])`, the slide list only a carousel has. Counted across all fourteen snapshots it matches 1 on each of the three carousel pages and 0 on every other -- the feed, both reels, all four single photos, /reels/<id>/, and the /p/<id>/ modal. That last zero matters for the same reason it does further down: this block's URL pattern does select the modal.
+
+Why the guard has to stay: widening the caption column is only safe when the media is widened or scaled to match. Without it, a reel on one of these URLs would take the wider caption from HERE while the reel block above also widened its media, and a single-media photo post would take it with nothing compensating -- the second is exactly the bug fixed on reel pages above.
+
+
+## `main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(li[style*="translateX"])`
+
+The width cap, for SQUARE carousels only, and the counterpart of the single-photo cap at the bottom of this file. A square carousel's column carries no `--x-maxWidth`, so the token every other carousel rule in this block uses is not a lever here; `max-width` on the column is, exactly as it is for a square single photo. It reads `--u-post-photo-width` rather than `--u-post-width` for the same reason: the shape it is bringing into line is the square single photo, and the two should land on the same width.
+
+The guard `:not([style*="--x-maxWidth"])` is on the element ITSELF, not `:not(:has(...))`. The token is an inline style on `.xvc5jky` directly -- the same element -- so a `:has()` spelling matches nothing and would silently cap the 3:4 carousels too, putting `--u-post-photo-width` in a fight with `--u-post-width`. Measured: the attribute form matches 1 on the square carousel and 0 on both 3:4 carousels.
+
+Measured at the defaults on the square carousel snapshot, 1638px window: column 1598 -> 1150, caption 335 -> 380, media area 1263 -> 770. The square single photo lands at 770 from the same settings, which is the point.
+
+KNOWN ARTIFACT, and do not try to "fix" it against a snapshot. Each slide frame carries an inline literal `width:<n>px` that Instagram's JS computed from the container AT LOAD, with the slide offsets written as multiples of it -- 1262 on this snapshot, against a stock media area of 1263. SingleFile freezes both. So on the saved page the cap narrows the container while the frozen slide stays 1262, and any measurement taken there reports the slide overflowing its 770px viewport by 493px. That number is an artifact of the capture, not a prediction. **Confirmed live on 2026-09-11**: with the style applied, the slides resize correctly at every value of `--u-post-photo-width` and each lands accurately in the frame. Instagram re-derives the slide width and the offsets from the container, exactly as it does for an unstyled page when the viewport is resized. So the cap alone is correct and complete here, and any offline measurement of this snapshot that reports an overflow is measuring the freeze, not the rule. Do not add machinery to "fix" it.
+
+No zoom rule accompanies this cap, and none is needed: because Instagram re-derives the slide from the container, capping the container is the whole job. The 3:4 carousel had such a rule until 2026.9.11.4 and it turned out to do nothing live, so it was removed along with its setting -- this cap is now the pattern both carousel shapes follow. A `container-type: inline-size` + `tan(atan2())` version was built and measured before the live check and is NOT in the style: it hit a zoom/`cqw` feedback loop (0.63 computed where 0.61 was wanted) and, being a reconstruction of the very number the snapshot freezes, could not be validated by any offline test. It is recorded here so it is not attempted again.
 
 
 ## `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])`
 
-The column has to hold the caption at its new width plus the zoomed media, so it needs its own setting rather than the reel page's --u-reel-width: at that variable's 950px default the media overflows its box by 152.5px, measured at the default scale. The media area comes out as the column width minus the caption width exactly -- 785 gives 356, 950 gives 521, 1200 gives 771 -- so the column needs at least caption + natural media width x scale. With the defaults that is 429 + 449 x 1.5 = 1102.5, and 1150 leaves a little slack.
+The column, and since 2026-09-11 the ONLY thing that sizes a 3:4 carousel's media. Instagram fills whatever media area the column leaves it, so the media comes out as the column width minus the caption column, exactly: measured at 785 -> 356, 950 -> 521, 1200 -> 771.
 
-Overshooting is not free either: the media stays the size zoom makes it, so surplus column width becomes empty space around the media, and because an aspect-ratio spacer sizes the container, surplus width becomes surplus HEIGHT too. At 1400 the container is 971x1293 around a 673x898 media.
+It needs its own setting rather than the reel page's --u-reel-width, whose 950px default leaves a 3:4 carousel narrower than intended. The 1150px default here is a picked compromise, not a derived number, and is the user's to set.
 
+A `zoom` rule used to sit below this one, driven by a `--u-post-media-scale` setting, on the belief that widening the column alone left the media at its original size. That was an artifact of the saved page, where each slide's inline `width:<n>px` is frozen. Live, Instagram re-derives it, and the zoom changed nothing at all -- see the removal record under 2026.9.11.4 in CHANGELOG.md. Do not reintroduce one without a live measurement.
 
-## `main div[style*="--x-maxWidth"] > div > div:has(li[style*="translateX"])`
-
-The media column holds the caption and the comments as well as the carousel, so zooming the column itself would scale the text and fight the text settings above -- a username box measured 18px before and 23.4px after. This selects the outermost element holding the media and nothing else: walking outward from the carousel's <ul>, every ancestor up to this one contains zero text characters, and its parent jumps to 2283.
-
-`translateX` is matched rather than `transform:` because it sits after the colon, out of reach of the inline-style whitespace problem described at the top of this file.
-
-The scale is a plain setting, not a computed fit. The feed's tan(atan2()) formula does not transfer: that one divides by a constant 468px because the feed wrapper is 468px wide whatever the media ratio, whereas here the slide width varies with the ratio, and CSS cannot read an element's own width to divide by it.
-
-The two settings are coupled: raising this one needs the column width above raised with it, by the natural media width times the increase. The natural width varies with the post's aspect ratio -- 449px on the 3:4 post both snapshots contain -- so the pairing cannot be made automatic, and a squarer or landscape post, which starts wider, will want a wider column at the same scale. That is untested; no snapshot of one exists.
-
-This selector must stay inside this URL block. It is not self-guarding: on a feed page it matches a 470x3644 region spanning many posts, and zooming that scales the feed's text with it -- measured at a username box of 18px going to 27px. The URL scoping, not the selector, is what keeps it off the feed.
+This rule and the caption rule above reach 3:4 carousels ONLY. A square carousel is built with no `--x-maxWidth` on its column at all, and is capped by `max-width` instead, one rule up. The two shapes are now handled the same way: cap the column, let Instagram fill what is left. A landscape carousel is untested and no snapshot of one exists.
 
 
 ## `main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video))`
@@ -259,7 +358,7 @@ So --x-maxWidth is NOT the lever here, however well it works one block up. Setti
 
 No zoom either, unlike the carousel rule above. A single photo's `padding-bottom` box takes its width from the column, so the media is the column minus the caption, linearly -- measured at 900/1102/1150/1300 with the caption at 429, the media came out 470/672/721/964 wide. Nothing needs scaling and no aspect ratio is matched, so unlike the carousel settings the WIDTH is not calibrated against one ratio; the ratio is read only to decide whether the cap applies at all.
 
-The default comes from 429 + 673 -- the caption column plus the width a carousel's media reaches at the default scale -- rounded down to 1100 because a range setting's default has to be a whole number of steps above its minimum, and 1102 is not one. Measured with the whole style applied at the defaults: square 670x670, 3:4 670x893, against the carousel's 674x898 and the reel's 520x855. Four to five pixels from a carousel on both axes, and identical to each other in width, which is the point. Landscape is deliberately outside that comparison at 1168x659, Instagram's own width less the widened caption.
+What the cap is for is bringing the two shapes to the same width; the default is a picked compromise, not a derived number, and any value is the user's to set. Measured with the whole style applied and this setting at 1100, the default at the time: square 670x670, 3:4 670x893, against the carousel's 674x898 and the reel's 520x855. Four to five pixels from a carousel on both axes, and identical to each other in width, which is the point. Landscape is deliberately outside that comparison at 1168x659, Instagram's own width less the widened caption.
 
 Three guards, each load-bearing. `:has(div[style*="padding-bottom"] > img)` requires a photo box in this column. `:not(:has(li[style*="translateX"]))` excludes a carousel. `:not(:has(video))` excludes a reel, which this block's URL pattern also selects. Counted across all thirteen snapshots the three together match 1 on each of the five single-photo pages and 0 on every other page -- the feed, both carousels, both reels, /reels/<id>/, and the /p/<id>/ modal. That last zero is the one that matters: this block's URL pattern does select the modal, and every other rule here is kept off it only by a guard the modal happens to fail.
 
@@ -274,7 +373,7 @@ The caption column is set for every shape, landscape included; only the width ca
 
 The width cap, for SQUARE AND PORTRAIT photos only.
 
-A landscape photo gets no cap: Instagram's own layout for one is already good, and capping the column to a width chosen for a portrait post is what made it worse. The 16:9 snapshot measures 1262x712 stock in a 1598px column; capping the column to the 1100px default took it to 670x378 -- well under half the area, and short enough to leave the media sitting in a letterboxed band beside a taller caption. Square and portrait have the opposite problem and still need the cap: uncapped, the square post fills the content area at 1262x1262 and keeps growing with the window.
+A landscape photo gets no cap: Instagram's own layout for one is already good, and capping the column to a width chosen for a portrait post is what made it worse. The 16:9 snapshot measures 1262x712 stock in a 1598px column; capping the column to 1100px took it to 670x378 -- well under half the area, and short enough to leave the media sitting in a letterboxed band beside a taller caption. Square and portrait have the opposite problem and still need the cap: uncapped, the square post fills the content area at 1262x1262 and keeps growing with the window.
 
 So the fourth guard selects "ratio at or above 100%". It reads the leading digit of the padding-bottom percentage, which separates the two cases: landscape is below 100% and always starts 5-9, while square, portrait and reel ratios are at or above 100% and all start with 1. Nothing Instagram accepts is tall enough to reach a leading 2, which is the only thing that would break the correspondence.
 

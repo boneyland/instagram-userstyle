@@ -1,25 +1,28 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.11
+@version        2026.9.11.7
 @namespace      userstyles.world/user/boneyland
-@description    Homepage/Feed page: two columns, larger media, less-cropped portrait reels. Post and reel pages: enlarged carousels and reels, square and portrait single photos brought to a consistent size, and landscape ones left at Instagram's own. Requires Firefox 126+ (:has() and zoom).
+@description    Homepage/Feed page: two columns, larger media, less-cropped portrait reels. Post and reel pages: enlarged 3:4 carousels and reels, square posts and portrait single photos brought to a consistent width, and landscape ones left at Instagram's own.
 @author         boneyland
-@homepageURL    https://github.com/boneyland
+@homepageURL    https://github.com/boneyland/instagram-userstyle
 @license        MIT
 @preprocessor   default
 
+@var select u-feed-sidebar       "Feed: the right-hand sidebar (your profile, the account switcher, suggestions)" {
+	"hidden:Hidden*": "none",
+	"shown:Shown":    "block"
+}
 @var range  u-feed-width         "Feed: width of the feed, as a % of the window"                 [80, 30, 100, 1]
 @var range  u-feed-min           "Feed: never let the feed get narrower than"                    [780, 400, 1600, 10, "px"]
-@var range  u-media-column       "Feed: width of the photo, as a % of the post"                  [55, 20, 90, 1]
+@var range  u-media-column       "Feed: width of the photo, as a % of the post"                  [55, 20, 100, 1]
 @var range  u-caption-min        "Feed: width the caption needs beside the photo, or it moves underneath" [320, 150, 800, 10, "px"]
 @var range  u-media-max-height   "Feed: never let a photo or reel get taller than"               [900, 300, 2000, 50, "px"]
-@var range  u-feed-reel-width    "Feed: never let a reel get wider than"                         [550, 300, 1200, 10, "px"]
-@var number u-carousel-scale-max "Feed: never enlarge a multi-photo post by more than (1 = off)" [1.5, 1, 3, 0.1]
+@var range  u-feed-reel-width    "Feed: never let a reel get wider than"                         [550, 300, 2000, 10, "px"]
+@var number u-carousel-scale-max "Feed: never enlarge a multi-photo post by more than (1 = off)" [1.5, 1, 6, 0.1]
 @var range  u-text-size          "Text: size of usernames, captions and comments"                [14, 10, 24, 1, "px"]
 @var range  u-text-line-height   "Text: spacing between lines of that text"                      [18, 12, 36, 1, "px"]
-@var number u-post-media-scale   "Post page: enlarge a multi-photo post by (1 = off)"            [1.5, 1, 2, 0.05]
 @var range  u-post-width         "Post page: total width of a multi-photo post and caption"      [1150, 400, 2000, 10, "px"]
-@var range  u-post-photo-width   "Post page: total width of a tall or square single photo and caption" [1150, 400, 2000, 10, "px"]
+@var range  u-post-photo-width   "Post page: total width of a square post or a tall single photo, and caption" [1150, 400, 2000, 10, "px"]
 @var range  u-reel-width         "Reel and post pages: total width of reel and caption together" [950, 400, 2000, 10, "px"]
 @var range  u-reel-media-info    "Reel and post pages: width of the caption column"              [380, 200, 800, 1, "px"]
 ==/UserStyle== */
@@ -29,7 +32,7 @@
 	:root {
 		--u-media-px: calc(
 			(var(--u-media-column) / 100) *
-			max(var(--u-feed-min), var(--u-feed-width) * 1vw)
+			max(var(--u-feed-min), var(--u-feed-width) * (100vw - 72px) / 100)
 			- 12px
 		);
 	}
@@ -55,10 +58,17 @@
 	}
 
 	.x6bx242 {
-		display: none;
+		display: var(--u-feed-sidebar);
 	}
 
 	@media screen and (min-width: 800px) {
+
+		main > div:has(> div[style*="630px"]),
+		main > div:has(> div[style*="max-width"]) {
+			box-sizing: border-box;
+			padding-left: 72px;
+			justify-content: safe center;
+		}
 
 		main > div > div[style*="630px"],
 		main > div > div[style*="max-width"] {
@@ -161,8 +171,38 @@
 	}
 
 	article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"][style*="125%"]) {
-		max-width: calc(var(--u-media-max-height) / 1.25);
+		max-width: min(
+			calc(var(--u-media-max-height) / 1.25),
+			calc(var(--u-feed-reel-width) * 16 / 9 / 1.25)
+		);
 		margin-inline: auto;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:not([style*="125%"])) {
+		max-width: var(--u-feed-reel-width);
+		margin-inline: auto;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="125%"]) {
+		padding-bottom: 0 !important;
+		height: auto !important;
+		width: fit-content !important;
+		margin-inline: auto;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="125%"]) > div {
+		position: static !important;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="125%"]) video {
+		position: static !important;
+		display: block;
+		width: auto !important;
+		height: auto !important;
+		max-width: 100% !important;
+		max-height: var(--u-media-max-height) !important;
+		object-fit: contain !important;
+		margin: 0 auto;
 	}
 
 	article:not([role="dialog"] *) img[aria-hidden="true"] {
@@ -210,16 +250,16 @@
 
 @-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p)/.*") {
 
-	:root:has(main div[style*="--x-maxWidth"] li[style*="translateX"]) {
-		--media-info: var(--u-reel-media-info) !important;
+	main > div > div.xvc5jky:has(li[style*="translateX"]) {
+		--media-info: var(--u-reel-media-info);
+	}
+
+	main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(li[style*="translateX"]) {
+		max-width: min(100%, var(--u-post-photo-width)) !important;
 	}
 
 	main div[style*="--x-maxWidth"]:has(li[style*="translateX"]) {
 		--x-maxWidth: min(100%, var(--u-post-width)) !important;
-	}
-
-	main div[style*="--x-maxWidth"] > div > div:has(li[style*="translateX"]) {
-		zoom: var(--u-post-media-scale);
 	}
 
 	main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)) {

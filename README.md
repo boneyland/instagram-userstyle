@@ -6,9 +6,9 @@ A userstyle that rebuilds the desktop web layout of `www.instagram.com` around t
 
 ## What it changes
 
-**Feed.** The feed column widens to a share of the window rather than sitting at Instagram's fixed width. Each post becomes two columns — media on the left, caption and comments beside it — falling back to stacked when the window is too narrow to give the caption its minimum. Photos drop Instagram's crop-to-fill box and are sized to their own proportions, so nothing is cut off and no blurred plate is drawn behind them. Carousels are enlarged to fit the wider column. Portrait reels, which Instagram flattens into a 4:5 box and crops, are given back more of their height. The right-hand rail is hidden.
+**Feed.** The feed column widens to a share of the window rather than sitting at Instagram's fixed width. Each post becomes two columns — media on the left, caption and comments beside it — falling back to stacked when the window is too narrow to give the caption its minimum. Photos drop Instagram's crop-to-fill box and are sized to their own proportions, so nothing is cut off and no blurred plate is drawn behind them. Carousels are enlarged to fit the wider column. Portrait reels, which Instagram flattens into a 4:5 box and crops, are given back more of their height. A landscape reel is sized to its own proportions instead, and follows the same width and height caps. The right-hand rail is hidden by default, and can be brought back from a setting.
 
-**Post pages** (`/p/<id>/` and `/<user>/p/<id>/`). Carousels are enlarged and the column widened to hold them beside a caption. Single photos get the more useful fix: Instagram lays them out two different ways depending on shape, so a tall photo comes out smaller than a carousel in the same place while a square one grows without limit. Both are brought to a consistent width. Landscape photos are deliberately left alone — Instagram's own layout for them is already good.
+**Post pages** (`/p/<id>/` and `/<user>/p/<id>/`). Carousels are enlarged and the column widened to hold them beside a caption. Single photos get the more useful fix: Instagram lays them out two different ways depending on shape, so a tall photo comes out smaller than a carousel in the same place while a square one grows without limit. Neither is sized directly — what the settings govern is the column holding photo and caption, and the width of the caption column within it. The photo takes what is left, which is the same width whatever its shape. Landscape photos are deliberately left alone — Instagram's own layout for them is already good.
 
 **Reel pages** (`/<user>/reel/<id>/`, and reels reached through either `/p/` path). The 9:16 box is collapsed to the video's real height and the caption column is widened.
 
@@ -34,6 +34,7 @@ Fourteen, all exposed through the Stylus settings pane.
 
 | Setting | Default |
 | --- | --- |
+| Feed: the right-hand sidebar (your profile, the account switcher, suggestions) | Hidden |
 | Feed: width of the feed, as a % of the window | 80% |
 | Feed: never let the feed get narrower than | 780px |
 | Feed: width of the photo, as a % of the post | 55% |
@@ -43,9 +44,8 @@ Fourteen, all exposed through the Stylus settings pane.
 | Feed: never enlarge a multi-photo post by more than (1 = off) | 1.5 |
 | Text: size of usernames, captions and comments | 14px |
 | Text: spacing between lines of that text | 18px |
-| Post page: enlarge a multi-photo post by (1 = off) | 1.5 |
 | Post page: total width of a multi-photo post and caption | 1150px |
-| Post page: total width of a tall or square single photo and caption | 1150px |
+| Post page: total width of a square post or a tall single photo, and caption | 1150px |
 | Reel and post pages: total width of reel and caption together | 950px |
 | Reel and post pages: width of the caption column | 380px |
 
@@ -54,8 +54,10 @@ The two post-page settings are coupled: enlarging a carousel needs the column wi
 ## Known limitations
 
 - **Reels are handled at 9:16 only.** A reel of any other shape keeps Instagram's box on all three reel URLs.
+- **A reel that is genuinely 4:5 is cropped left and right in the feed.** Instagram flattens anything taller into the same 4:5 box, so a 9:16 reel cannot be told apart from a true one, and giving a tall reel back its height is the same thing as taking the sides off a short one. Lowering "Feed: never let a reel get wider than" stops at 9:16, so a tall reel is never cropped on its sides at any setting.
 - **Post-page defaults are calibrated against one aspect ratio**, a 3:4 carousel. A squarer or wider post starts wider and will want a wider column at the same scale.
 - **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
+- **Only the feed reserves space for the left nav rail.** The rail is fixed-positioned and takes no layout space of its own, so the feed keeps 72px clear on the left to stay out from under it. Post and reel pages do not: they centre in the window, and a width setting taken past the window's width minus 144px will run under the rail there.
 - **A mixed carousel** — photo and video slides in one post — is the one page shape nothing has been written against, for want of a capture of one.
 
 ## Repository layout
