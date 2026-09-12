@@ -1,8 +1,8 @@
 /* ==UserStyle==
-@name           Instagram Desktop Site local
-@version        2026.9.12.2
+@name           Instagram Desktop Site
+@version        2026.9.12.4
 @namespace      userstyles.world/user/boneyland
-@description    Homepage/Feed page: two columns, larger media, less-cropped portrait reels. Post and reel pages: enlarged portrait reels and 3:4 carousels, square posts and portrait single photos brought to a consistent width, and landscape ones left at Instagram's own.
+@description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable.
 @author         boneyland
 @homepageURL    https://github.com/boneyland/instagram-userstyle
 @license        MIT
@@ -21,9 +21,10 @@
 @var number u-carousel-scale-max "Feed: scale carousels by a maximum of (1 = off)"                  [1.5, 1, 6, 0.1]
 @var range  u-text-size          "Text: font size of usernames, captions and comments"              [14, 10, 24, 1, "px"]
 @var range  u-text-line-height   "Text: spacing between lines of that text"                         [18, 12, 36, 1, "px"]
-@var range  u-post-photo-width   "Post page: total width of photo and caption"                      [1150, 400, 2000, 10, "px"]
-@var range  u-post-width         "Reel/Post page: total width of a 3:4 carousel post and caption"   [1150, 400, 2000, 10, "px"]
-@var range  u-reel-width         "Reel/post pages: total width of reel and caption"                 [950, 400, 2000, 10, "px"]
+@var range  u-post-photo-width   "Reel/Post page: total width of photo/video and caption"           [1350, 400, 2000, 10, "px"]
+@var range  u-post-width         "Reel/Post page: total width of a 3:4 carousel post and caption"   [1350, 400, 2000, 10, "px"]
+@var range  u-reel-width         "Reel/post pages: total width of a 9:16 reel and caption"          [950, 400, 2000, 10, "px"]
+@var range  u-reel-height        "Reel/post pages: maximum height of a 9:16 reel"                   [950, 400, 2000, 10, "px"]
 @var range  u-reel-media-info    "Reel/post pages: width of the caption column"                     [380, 200, 800, 1, "px"]
 ==/UserStyle== */
 
@@ -238,23 +239,20 @@
 	}
 
 	main div[style*="--x-maxWidth"]:has(> div > div > div video) {
-		--x-maxWidth: min(100%, var(--u-reel-width)) !important;
+		--x-maxWidth: min(100%, var(--u-reel-width),
+		calc(var(--u-reel-height) * 9 / 16 + var(--u-reel-media-info))) !important;
 	}
-
-	main div[style*="padding-bottom"][style*="177"] {
-		padding-bottom: 0 !important;
-		height: min(95vh, 950px) !important;
-	}
-}
-
-
-@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*") {
 
 	main > div > div.xvc5jky:has(li[style*="translateX"]) {
 		--media-info: var(--u-reel-media-info);
 	}
 
 	main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(li[style*="translateX"]) {
+		max-width: min(100%, var(--u-post-photo-width)) !important;
+	}
+
+	main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(video) {
+		--media-info: var(--u-reel-media-info);
 		max-width: min(100%, var(--u-post-photo-width)) !important;
 	}
 

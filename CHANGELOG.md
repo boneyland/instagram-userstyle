@@ -1,5 +1,62 @@
 # Changelog
 
+## 2026.9.12.4
+
+Compared against `2026.9.12.1`, which was published to userstyles.world earlier the same day and is kept as `Instagram-20260912-uploaded.user.css` -- so this entry is the whole of what an installer receives. `2026.9.12.2` and `2026.9.12.3` were unpublished working steps and are covered here rather than kept as entries of their own. The `2026.9.12.1` entry below remains the cumulative comparison against `20260910` for anyone updating from further back.
+
+### Reels on the post and reel pages now respond to both settings, at every shape
+
+Three separate defects, one arc of work, all of it reported from the live site and then measured against snapshots captured for it.
+
+**Landscape reels took nothing at all.** Reels at `56.2696%`, `88.8614%`, `75%` and `69.4981%` responded to no setting except the text ones. Four snapshots were captured -- two on `/<user>/p/<id>/`, two on `/<user>/reel/<id>/` -- and the cause measured: a landscape reel's column carries **no inline `--x-maxWidth`**, and all three reel rules were keyed on that token, so none of them matched. They are now caught by `main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(video)`, which sets the width cap and the caption column together. Measured at the defaults, 1638px window, stock -> styled: 1598x712 -> 1150x452 with the video 1262x710 -> 769x433; 1598x1123 -> 1150x685; 1598x949 -> 1150x579; 1598x879 -> 1150x536. Caption 335 -> 380 on all four.
+
+That measurement also produced the general rule the whole block now turns on, checked across all twenty-one snapshots: **Instagram writes the inline `--x-maxWidth` only when the media is taller than square.** 177.778% and 133.333% carry one; 100% and every landscape ratio carry none. So the block splits on the token rather than on media type, and the no-token rules cover square and landscape alike.
+
+**The 9:16 reel had a hard-coded height.** `padding-bottom: 0; height: min(95vh, 950px)` replaced the ratio box with a fixed height, which nothing could adjust and which fought the width setting: because the video is `object-fit: contain`, the box drifted away from 9:16 at every setting and letterboxed. Measured before: at a 950px column the box was 569x855 holding a video visible at 481x855 -- an 88px dead band on each side -- and raising the width setting past that changed nothing but the size of the bands.
+
+The rule is **removed**. Instead the column itself is bounded, so the `padding-bottom:177.778%` box keeps its own ratio for free:
+
+```
+--x-maxWidth: min(100%, var(--u-reel-width),
+   calc(var(--u-reel-height) * 9 / 16 + var(--u-reel-media-info)))
+```
+
+Measured after, at a 1638x900 window, as column / box: 950/950 -> 914 / 533x948; 950/600 -> 718 / 337x598; 950/400 -> 605 / 224x398; 950/1400 -> 950 / 569x1012; 2000/400 -> 605 / 224x398. Every one reads h/w 1.778 exactly. Both settings bind, whichever is tighter, and the visible video at today's defaults is unchanged -- all that goes away is the dead space.
+
+Two consequences to know. The `95vh` term is gone with the rule, so the height setting is authoritative and a reel can exceed the window: at 950 on a 900px-tall window the box is 948 tall and scrolls. And with both settings at 950 the height term binds first, so the effective default column is **914px**, not the 950 the width slider reads.
+
+The `9/16` is written for 9:16 and is conservative for anything shallower -- the same trade the feed's `16/9/1.25` term makes. It replaces the style's only literal ratio match on a post page.
+
+### The post and reel blocks became one
+
+The reel URL was added to the post block, because **every post shape is reachable at `/<user>/reel/<id>/`, not only reels** -- reported live. That left the two `regexp()` conditions identical character for character, so they were merged. Three blocks become two. Nothing about the rules changed: they never overlapped by URL, only by selector, and `scoped.py --diff` measured 0 standard and 0 custom property changes across every snapshot, with the reel-permalink snapshot moving from 2 applicable blocks to 3.
+
+### Removed
+
+A **duplicate `--x-maxWidth` rule** on the reel column, left behind when the new bounded version was written above it. Same selector, same specificity, both `!important`, so it lost only by coming first -- live code that did nothing and would have silently reverted the height cap if the block were ever reordered. `scoped.py --diff` confirms deleting it changes nothing on any snapshot.
+
+### Settings
+
+Fourteen become **fifteen**.
+
+| | Setting |
+| --- | --- |
+| Added | `u-reel-height`, "Reel/post pages: maximum height of a 9:16 reel", default 950px. |
+| Relabelled | Every setting. The labels were rewritten to name what they govern rather than describe it -- "Feed: maximum height of media" rather than "Feed: never let a photo or reel get taller than" -- and the post-page pair now reads "Reel/Post page:", since both reach the reel URL. |
+| Default moved | `u-post-photo-width` and `u-post-width`, 1150px -> 1350px. |
+
+`u-reel-height`'s label shipped for one working version as a copy of `u-reel-width`'s, which would have read as a duplicate slider in the settings pane. Corrected here.
+
+### Verification
+
+`verify.py` passes. `scoped.py --diff` across all twenty-one snapshots isolates each change to the pages it is meant to reach: the landscape-reel rule to the four landscape reels, and nothing at all on any feed, carousel, single photo, modal or `/reels/<id>/` page. Every change in this release was also checked on the live site.
+
+### Not done: the reel stage's `min-height`
+
+A dark band under a small reel was reported with a screenshot, and the snapshot explained it exactly: the stage that holds the video carries Instagram's own `min-height: 450px` and centres the video in it, so a media box shorter than that leaves a band above and below. Measured at `u-reel-height: 400`: stage 225x450 against a 224x398 box, 26px each side. A one-property fix, `main > div > div.xvc5jky > div > div:has(video) { min-height: 0 !important }`, closed it to 0 on the snapshot and measured inert everywhere else.
+
+**It is not in the style.** The live check found the band did not occur, so the rule would have been machinery against a snapshot artefact. Recorded here because the snapshot measurement is reproducible and convincing on its own -- anyone re-deriving it offline will reach the same rule -- and because the discrepancy is unexplained: the floor is real in the saved CSS and something live evidently overrides or avoids it. Do not add the rule on the strength of an offline measurement; reproduce the band on the live site first.
+
 ## 2026.9.12.1
 
 Compared against `20260910`, the version currently published to userstyles.world -- so this entry is the whole of what an installer receives, not one step of it. Seven unpublished versions sit between the two, `2026.9.11.1` through `2026.9.11.7` and this one. Each keeps its own entry below, with the measurements and the reasoning; this entry is their sum and the place to start.

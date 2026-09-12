@@ -9,10 +9,11 @@ The style is published to [userstyles.world](https://userstyles.world/) (USw)
 under the user `boneyland`. Installers get auto-updates from USw once a new
 version is live.
 
-**Publishing is entirely manual.** The project is not a git repository and the
-source is not hosted anywhere. Every release so far has been uploaded, typed or
-pasted directly into the USw website. There is no external git remote and no
-mirroring — see Mirroring below before suggesting otherwise.
+**Publishing is entirely manual.** Every release so far has been uploaded, typed
+or pasted directly into the USw website. The project has been under git since
+2026-09-11 and the repository is public, but git is for history, not
+distribution: USw is fed by hand from the deliverable, with no mirroring — see
+Mirroring below before suggesting otherwise.
 
 ## Before shipping
 
@@ -43,11 +44,22 @@ mirroring — see Mirroring below before suggesting otherwise.
    comparator above is Stylus's, verified. That the USw update feed is what
    drives it has not been verified here.)*
 
-3. **Check `@description`.** It states the browser requirement (currently
-   Firefox 126+, for `:has()` and `zoom`). Raising the floor means editing it.
-   It names Firefox only; see Open items in `CLAUDE.md` on the Chromium claim.
+3. **Check `@description`.** It describes what the style does and deliberately
+   does **not** state the browser floor — do not add it there. The floor lives
+   in `README.md` under Requirements and in `USw-notes.md`, and raising it means
+   editing both. See Open items in `CLAUDE.md` on the Chromium claim.
 
-4. **Write the notes.** Two files, two audiences:
+   Check the **settings** too: `README.md` carries the table of defaults and
+   `USw-notes.md` names individual settings in its bullets, so a renamed or
+   added setting has to be chased into both or installers read labels that are
+   not in the pane.
+
+4. **After uploading**, save the uploaded file alongside the previous ones as
+   `Instagram-YYYYMMDD-uploaded.user.css` and point the `CHANGELOG.md`
+   convention at it: the next entry is written as a comparison against the
+   newest uploaded copy, not against the working file.
+
+5. **Write the notes.** Two files, two audiences:
 
    - `CHANGELOG.md` — release notes per `@version`, and the record of what was
      removed and why. Mechanism and internals belong here.
