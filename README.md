@@ -38,7 +38,7 @@ Fourteen, all exposed through the Stylus settings pane.
 | Feed: width of the feed, as a % of the window | 80% |
 | Feed: never let the feed get narrower than | 780px |
 | Feed: width of the photo, as a % of the post | 55% |
-| Feed: width the caption needs beside the photo, or it moves underneath | 320px |
+| Feed: minimum width of the caption column before it moves underneath | 320px |
 | Feed: never let a photo or reel get taller than | 900px |
 | Feed: never let a reel get wider than | 550px |
 | Feed: never enlarge a multi-photo post by more than (1 = off) | 1.5 |
@@ -55,9 +55,7 @@ The two post-page settings are coupled: enlarging a carousel needs the column wi
 
 - **Reels are handled at 9:16 only.** A reel of any other shape keeps Instagram's box on all three reel URLs.
 - **A reel that is genuinely 4:5 is cropped left and right in the feed.** Instagram flattens anything taller into the same 4:5 box, so a 9:16 reel cannot be told apart from a true one, and giving a tall reel back its height is the same thing as taking the sides off a short one. Lowering "Feed: never let a reel get wider than" stops at 9:16, so a tall reel is never cropped on its sides at any setting.
-- **Post-page defaults are calibrated against one aspect ratio**, a 3:4 carousel. A squarer or wider post starts wider and will want a wider column at the same scale.
 - **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
-- **Only the feed reserves space for the left nav rail.** The rail is fixed-positioned and takes no layout space of its own, so the feed keeps 72px clear on the left to stay out from under it. Post and reel pages do not: they centre in the window, and a width setting taken past the window's width minus 144px will run under the rail there.
 
 ## Repository layout
 
@@ -84,7 +82,7 @@ python3 scoped.py --diff old.user.css new.user.css     # every snapshot, at its 
 
 `verify.py` checks the metadata with `usercss-meta` — the parser Stylus itself uses — then runs a rule and declaration census in headless Firefox to catch silently dropped syntax, and with two files diffs every computed property of every element. It is blind to URL scoping, which is what `scoped.py` covers.
 
-**Neither script runs from a fresh clone.** Both read `Instagram_snapshots/`, which is not tracked — the snapshots are 273MB of captured pages, and they capture a logged-in session. Capture your own with [SingleFile](https://github.com/gildas-lormeau/SingleFile) before verifying.
+**Neither script runs from a fresh clone.** Both read `Instagram_snapshots/`, which is not tracked — the snapshots are captured logged-in sessions of Instagram. Capture your own with [SingleFile](https://github.com/gildas-lormeau/SingleFile) before verifying.
 
 ## License
 

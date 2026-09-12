@@ -1,6 +1,6 @@
 /* ==UserStyle==
-@name           Instagram Desktop Site
-@version        2026.9.12.1
+@name           Instagram Desktop Site local
+@version        2026.9.12.2
 @namespace      userstyles.world/user/boneyland
 @description    Homepage/Feed page: two columns, larger media, less-cropped portrait reels. Post and reel pages: enlarged portrait reels and 3:4 carousels, square posts and portrait single photos brought to a consistent width, and landscape ones left at Instagram's own.
 @author         boneyland
@@ -12,19 +12,19 @@
 	"hidden:Hidden*": "none",
 	"shown:Shown":    "block"
 }
-@var range  u-feed-width         "Feed: width of the feed, as a % of the window"                 [80, 30, 100, 1]
-@var range  u-feed-min           "Feed: never let the feed get narrower than"                    [780, 400, 1600, 10, "px"]
-@var range  u-media-column       "Feed: width of the photo, as a % of the post"                  [55, 20, 100, 1]
-@var range  u-caption-min        "Feed: width the caption needs beside the photo, or it moves underneath" [320, 150, 800, 10, "px"]
-@var range  u-media-max-height   "Feed: never let a photo or reel get taller than"               [900, 300, 2000, 50, "px"]
-@var range  u-feed-reel-width    "Feed: never let a reel get wider than"                         [550, 300, 2000, 10, "px"]
-@var number u-carousel-scale-max "Feed: never enlarge a multi-photo post by more than (1 = off)" [1.5, 1, 6, 0.1]
-@var range  u-text-size          "Text: size of usernames, captions and comments"                [14, 10, 24, 1, "px"]
-@var range  u-text-line-height   "Text: spacing between lines of that text"                      [18, 12, 36, 1, "px"]
-@var range  u-post-width         "Post page: total width of a multi-photo post and caption"      [1150, 400, 2000, 10, "px"]
-@var range  u-post-photo-width   "Post page: total width of a square post or a tall single photo, and caption" [1150, 400, 2000, 10, "px"]
-@var range  u-reel-width         "Reel and post pages: total width of reel and caption together" [950, 400, 2000, 10, "px"]
-@var range  u-reel-media-info    "Reel and post pages: width of the caption column"              [380, 200, 800, 1, "px"]
+@var range  u-feed-width         "Feed: feed width, as a % of the window"                           [80, 30, 100, 1]
+@var range  u-feed-min           "Feed: minimum feed width in pixels"                               [780, 400, 1600, 10, "px"]
+@var range  u-media-column       "Feed: media width, as a % of feed width"                          [55, 20, 100, 1]
+@var range  u-caption-min        "Feed: minimum width of caption column before it moves underneath" [320, 150, 800, 10, "px"]
+@var range  u-media-max-height   "Feed: maximum height of media"                                    [900, 300, 2000, 50, "px"]
+@var range  u-feed-reel-width    "Feed: maximum width of reel"                                      [550, 300, 2000, 10, "px"]
+@var number u-carousel-scale-max "Feed: scale carousels by a maximum of (1 = off)"                  [1.5, 1, 6, 0.1]
+@var range  u-text-size          "Text: font size of usernames, captions and comments"              [14, 10, 24, 1, "px"]
+@var range  u-text-line-height   "Text: spacing between lines of that text"                         [18, 12, 36, 1, "px"]
+@var range  u-post-photo-width   "Post page: total width of photo and caption"                      [1150, 400, 2000, 10, "px"]
+@var range  u-post-width         "Reel/Post page: total width of a 3:4 carousel post and caption"   [1150, 400, 2000, 10, "px"]
+@var range  u-reel-width         "Reel/post pages: total width of reel and caption"                 [950, 400, 2000, 10, "px"]
+@var range  u-reel-media-info    "Reel/post pages: width of the caption column"                     [380, 200, 800, 1, "px"]
 ==/UserStyle== */
 
 @-moz-document domain("www.instagram.com") {
@@ -248,7 +248,7 @@
 }
 
 
-@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p)/.*") {
+@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*") {
 
 	main > div > div.xvc5jky:has(li[style*="translateX"]) {
 		--media-info: var(--u-reel-media-info);
