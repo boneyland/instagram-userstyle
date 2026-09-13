@@ -62,9 +62,9 @@ Fifteen, all exposed through the Stylus settings pane.
 | Text: spacing between lines of that text | 18px |
 | Reel/post pages: total width of photo/carousel and caption | 1350px |
 | Reel/post pages: total width of a 3:4 carousel post and caption | 1350px |
-| Reel/post pages: total width of a 9:16 reel and caption | 950px |
-| Reel/post pages: maximum height of a 9:16 reel | 950px |
-| Reel/post pages: total width of a landscape reel and caption | 1350px |
+| Reel/post pages: total width of a portrait reel and caption | 950px |
+| Reel/post pages: maximum height of a portrait reel | 950px |
+| Reel/post pages: total width of a landscape reel and caption | 1500px |
 | Reel/post pages: width of the caption column | 380px |
 
 Nothing is sized directly. Every width setting caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.

@@ -1,5 +1,49 @@
 # Changelog
 
+## 2026.9.14.1
+
+Compared against `2026.9.12.4`, kept as `Instagram-20260912.4-uploaded.user.css` -- so this entry is the whole of what an installer receives.
+
+A release about **labels that claimed more than they governed**, and the one setting that genuinely governed too much. Three labels were reported as misleading, each in the same way: the label named a category and the rule behind it covered a subset. In two cases the label was narrowed to the rule; in the third the rule was split so a label could be true of each half. No shape lost its sizing, and one gained a setting of its own.
+
+### A setting that drove six shapes now drives four
+
+`u-post-photo-width` -- "total width of photo/video and caption" -- reached three separate rules. A census across all twenty-one snapshots measured exactly what it moved: 1:1 (`100%`) and 4:3 (`74.9712%`) carousels, 1:1 (`100%`) and 3:4 (`133.333%`) single photos, and four landscape reels (`56.2696%`, `69.4981%`, `75%`, `88.8614%`). So a user tuning a photo could not leave reels alone, which is what was reported.
+
+The landscape-reel rule, `main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(video)`, now reads a **new setting of its own**, `u-reel-landscape`, "Reel/post pages: total width of a landscape reel and caption". `u-post-photo-width` keeps the carousel and single-photo rules and is relabelled "total width of photo/carousel and caption" -- the "video" half of its old label having left it.
+
+**The split itself renders nothing differently.** Measured against a baseline identical but for the split, with both settings at the old shared 1350: `verify.py` reports 0 standard-property differences across 2810 elements, and `scoped.py --diff` reports `std = 0` on **all twenty-one snapshots** at their own URLs, the four landscape reels included. The only property that moves anywhere is the new token being declared and inherited, and the declaration census goes 140 -> 141, which is the single `:root` line Stylus builds from the new setting. The default was then set to **1500**, so landscape reels do start wider than before; that is a chosen default, not a consequence of the split.
+
+**One overlap changed character and is worth knowing.** A mixed carousel -- photo plus video slides -- whose column carries no token matches both the slide-list cap and the `:has(video)` cap. While both read `u-post-photo-width` they set the same value and it did not matter; they now set different ones, so precedence decides. Measured in Firefox on a synthetic mixed carousel with the carousel rule first in source order: the element matched both and computed the **carousel** rule's value, so the specificity settles it, (0,3,4) against (0,2,4), and source order is never consulted. A mixed carousel therefore takes the carousel setting, which is the wanted outcome. It stays covered by construction only -- the overlap matches 0 on every snapshot, and none has been captured on a `/p/` URL.
+
+### Three labels narrowed to what they actually govern
+
+**"Feed: maximum height of media" is now "Feed: maximum height of a single photo or reel".** It never reached carousels: the feed photo rules exclude them with `:not(li *)` and the feed reel rules with the `a[href*="/reels/"]` guard. That exclusion is deliberate and load-bearing -- a carousel's slides sit in an absolutely positioned overlay on an empty aspect-ratio spacer, so collapsing anything in that chain makes them vanish -- and feed carousels have their own lever in the carousel scale setting. Label only; nothing renders differently.
+
+**"Feed: maximum width of reel" is now "Feed: maximum width of portrait reel"**, and the rule was narrowed to match rather than the label widened. It fed both reel families: the two rules on the flattened `125%` box, and one on every other box. The landscape rule is **removed**, so the setting now reaches only the `125%` portrait boxes its label names. See `docs/removed.md`.
+
+This is the one change in the release that moves pixels. A landscape feed reel is not left unbounded -- the other two rules stay, so it still collapses its padding box and sizes the video from its own intrinsic dimensions under `max-width: 100%` and the height setting -- but it no longer takes a dedicated width cap and instead fills the media column. Measured on `Instagram_feed2.html` at a 1638px window: the anchor's `max-width` 550px -> none, width 550 -> 687.017, auto margins 68.5 -> 0. Thirty-eight standard properties move, across that anchor and six descendants it was constraining; no `font-size`, `line-height` or `zoom` is among them. `scoped.py --diff` reports **1 of 21 snapshots changed**, the only one holding a landscape reel, with every post shape and the modal byte-identical.
+
+**The post-page pair now says "portrait reel" rather than "9:16 reel"**, which is the honest reach: those rules are keyed on the inline `--x-maxWidth` token, which Instagram writes whenever the media is taller than square, not only at 9:16. The `9 / 16` in the height arithmetic is unchanged and still exact only at that ratio, sizing anything shallower conservatively -- `docs/open-questions.md` carries that one.
+
+### Settings
+
+Fifteen become **sixteen**.
+
+| | |
+| --- | --- |
+| Added | `u-reel-landscape`, "Reel/post pages: total width of a landscape reel and caption", default 1500px. |
+| Relabelled | `u-media-max-height`, `u-feed-reel-width`, `u-post-photo-width`, `u-reel-width` and `u-reel-height` -- each narrowed to the shapes it governs. |
+| Prefix | The five post-page labels read "Reel/post pages:" throughout; two of them said "Reel/Post page:". The plural is the accurate form -- the block covers `/p/`, `/<user>/p/` and `/<user>/reel/`. |
+| Default | `u-feed-width` 80 -> **90**. |
+| Control | `u-carousel-scale-max` is a `range` rather than a `number`, so it draws as a slider like every other numeric setting. Its default, bounds and step are unchanged. |
+
+Saved values carry over: every rename keeps its variable name, and only the labels moved.
+
+### Removed
+
+The landscape feed reel's width cap, recorded in `docs/removed.md` with its measurements and the note that it should come back with a setting of its own rather than by re-attaching `u-feed-reel-width`.
+
 ## 2026.9.12.4
 
 Compared against `2026.9.12.1`, which was published to userstyles.world earlier the same day and is kept as `Instagram-20260912.1-uploaded.user.css` -- so this entry is the whole of what an installer receives. `2026.9.12.2` and `2026.9.12.3` were unpublished working steps and are covered here rather than kept as entries of their own. The `2026.9.12.1` entry below remains the cumulative comparison against `20260910` for anyone updating from further back.
