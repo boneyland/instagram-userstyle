@@ -3,7 +3,7 @@ node_modules/
 __pycache__/
 
 # SingleFile snapshots of Instagram pages.
-# Note the cost: verify.py and scoped.py read this folder and nothing else, so a fresh clone
+# verify.py and scoped.py read this folder, so a fresh clone
 # cannot run either script until snapshots are captured.
 Instagram_snapshots/
 
@@ -40,5 +40,5 @@ Instagram_snapshots/
 /.claude/workflows
 /.claude/.cc-writes/
 
-# Local, machine-specific Claude Code settings (not a placeholder by nature, though it happens to be one right now).
+# Local, machine-specific Claude Code settings
 /.claude/settings.local.json

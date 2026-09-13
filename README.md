@@ -55,7 +55,7 @@ Fifteen, all exposed through the Stylus settings pane.
 | Feed: minimum feed width in pixels | 780px |
 | Feed: media width, as a % of feed width | 55% |
 | Feed: minimum width of caption column before it moves underneath | 320px |
-| Feed: maximum height of media | 900px |
+| Feed: maximum height of a single photo or reel | 900px |
 | Feed: maximum width of reel | 550px |
 | Feed: scale carousels by a maximum of (1 = off) | 1.5 |
 | Text: font size of usernames, captions and comments | 14px |
