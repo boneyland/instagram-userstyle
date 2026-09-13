@@ -51,7 +51,7 @@ Fifteen, all exposed through the Stylus settings pane.
 | Setting | Default |
 | --- | --- |
 | Feed: the right-hand sidebar (your profile, the account switcher, suggestions) | Hidden |
-| Feed: feed width, as a % of the window | 80% |
+| Feed: feed width, as a % of the window | 90% |
 | Feed: minimum feed width in pixels | 780px |
 | Feed: media width, as a % of feed width | 55% |
 | Feed: minimum width of caption column before it moves underneath | 320px |
@@ -60,10 +60,11 @@ Fifteen, all exposed through the Stylus settings pane.
 | Feed: scale carousels by a maximum of (1 = off) | 1.5 |
 | Text: font size of usernames, captions and comments | 14px |
 | Text: spacing between lines of that text | 18px |
-| Reel/Post page: total width of photo/video and caption | 1350px |
-| Reel/Post page: total width of a 3:4 carousel post and caption | 1350px |
-| Reel/post pages: total width of 9:16 reel and caption | 950px |
+| Reel/post pages: total width of photo/carousel and caption | 1350px |
+| Reel/post pages: total width of a 3:4 carousel post and caption | 1350px |
+| Reel/post pages: total width of a 9:16 reel and caption | 950px |
 | Reel/post pages: maximum height of a 9:16 reel | 950px |
+| Reel/post pages: total width of a landscape reel and caption | 1350px |
 | Reel/post pages: width of the caption column | 380px |
 
 Nothing is sized directly. Every width setting caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
