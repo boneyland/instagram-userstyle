@@ -1,0 +1,196 @@
+# Rule notes — the `regexp()` post and reel block
+
+The post-page block: `@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*")`. It owns **every post shape** on `/p/<id>/`, `/<user>/p/<id>/` and `/<user>/reel/<id>/`.
+
+Read `docs/rule-notes.md` first — it carries the whole-file inline-style rule and the `:root` notes that every rule here depends on, and the index of all three files. The feed is in `docs/rule-notes-feed.md`.
+
+**Every rule here stays in its lane by selector, not by URL.** Three post shapes share three URL patterns; do not reach for a new block to separate two shapes. The lever a rule can use is decided by one thing — whether Instagram wrote an inline `--x-maxWidth` on the column, which it does exactly when the media is taller than square. `CLAUDE.md` has the table.
+
+Sections are in the order the rules appear in the style. A heading of *(section header)* is a block comment that introduces a group of rules rather than a single one.
+
+---
+
+## `@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*")`
+
+Every post shape, on each of the three URLs where a post gets a page of its own:
+
+https://www.instagram.com/<user>/reel/<id>/ https://www.instagram.com/p/<id>/ https://www.instagram.com/<user>/p/<id>/
+
+This was TWO blocks until 2026-09-12, one for reels and one for carousels and single photos. The reel path was added to the second because **every post shape is reachable at `/<user>/reel/<id>/`, not only reels** -- single photos and carousels included, the user's live observation of 2026-09-12; how a non-reel comes to be served at a `/reel/` URL was not established, and no snapshot of one exists. That left the two conditions identical character for character, so they were merged. Nothing about the rules changed: the two sets never overlapped by URL, only by selector, and that is still what separates them. `scoped.py --diff` measured the widening as inert on every snapshot then in the folder -- 0 standard and 0 custom property changes on all seventeen, with the reel-permalink snapshot moving from 2 applicable blocks to 3.
+
+A reel renders ONE layout across all three URLs, so its rules are written once and reach all of them. Measured across three 9:16 snapshots -- the same reel reached by both post-permalink paths, plus a different reel by a different user on /<user>/reel/<id>/ -- every selector count and every box agrees: no <article> and no [role="dialog"], one --x-maxWidth column at Instagram's stock min(100%, 673px), a 337x599.1 video in a `padding-bottom:177.778%` box, --media-info at its stock 335px, and zero carousel slides. The four landscape reels captured on 2026-09-12 agree with each other the same way across the two URL shapes they cover.
+
+**The lever every rule in this block can reach for is decided by one thing: whether Instagram wrote an inline `--x-maxWidth` on the column.** Measured across all twenty-one snapshots, it does so only when the media is taller than square -- 177.778% and 133.333% carry one, while 100% and everything below it (reels at 88.8614/75/69.4981/56.2696%, carousels at 75%, photos at 75/56.4394%) carry none. So the block splits in two down that line rather than by media type: token-carrying shapes are sized through the token, and the rest through `max-width` on `.xvc5jky` directly. A 4:5 (125%) post is the one untested point on that boundary; it exists only on the feed.
+
+Scoped by URL, not by selector, for two separate reasons. The padding-bottom rule at the bottom would otherwise hit portrait reels in the feed. And the :root rule at the top would misfire there too: on the saved feed `main div[style*="--x-maxWidth"] video` matches 1, so an unscoped version would push --media-info across the whole feed -- which is the bug that moved this token out of the domain() block in the first place.
+
+The pattern still excludes /reels/<id>/ (standalone, plural path) and /reel/<id>/ (the floating dialog opened from a /<user>/reels/ grid). Neither carries a `p` segment, and neither offers a <segment>/reel pair: /reel/<id>/ has nothing before `reel`, and /reels/<id>/ has no `reel` segment at all. Both get the feed rules above and nothing from here. That is deliberate -- the dialog is a modal with its own layout, which these rules, resizing a column and a full-height video box, would not transfer to unchanged, and the feed rules already exclude modals via :not([role="dialog"] *).
+
+The three reel rules that follow all need a <video> in a --x-maxWidth column; the carousel rules need the slide list; the single-photo rules need a photo box with neither. The one shape that could satisfy two at once is a MIXED carousel -- photo plus video slides. On a /p/ URL none has been captured, and since 2026-09-12 one with no token matches both the slide-list cap and the `:has(video)` cap, which set the same property to the same value; harmless, and the only deliberate overlap in the block. A mixed carousel does exist on the FEED -- `Instagram_feed2.html` article 7, three slides, two with video and one with img, all in 125% boxes -- where the reel rules miss it on the `a[href*="/reels/"]` guard and the photo rules on `:not(li *)`. CHANGELOG.md records the reasoning under 2026.9.10.1.
+
+
+## `:root:has(main div[style*="--x-maxWidth"] video)`
+
+--media-info is Instagram's own token, so this is an override and !important is what wins the collision. Declared here rather than in the domain() block so that it reaches the three paths above and nothing else -- Instagram uses this token elsewhere, including post modals.
+
+The :has() guard pairs this with the media column rule below, which fires only when the page holds a video. Widening the caption column is only safe when something widens the media to match: a carousel post reached through a /<user>/reel/<id>/ URL has no video, so the column rule missed while this one still took its 429px, leaving the carousel smaller than with the style switched off. Reported from the live site; all four post-page snapshots agree that the video guard scores zero on a carousel and one on a reel.
+
+The guard is deliberately looser than the column rule's -- a descendant combinator rather than that rule's exact child chain -- because it only has to answer "is there a video in the media column", not "which element is the column".
+
+What both guards share is the `--x-maxWidth` they are anchored to, and that is a narrower reach than it looks: only a reel whose column CARRIES that token, which per the boundary at the top of this section means a portrait one. Every landscape reel fails both, which is why they took nothing at all from this style until 2026-09-12 and are now handled by a rule of their own further down. Measured on all four landscape reel snapshots: `[style*="--x-maxWidth"]` matches 0 elements on the whole page.
+
+
+## `main div[style*="--x-maxWidth"]:has(> div > div > div video)`
+
+The reel column. Instagram writes --x-maxWidth inline as a value computed from the viewport, so the number differs between screens and zoom levels. Matching the property name with the descendant video as the guard survives that; matching the number would not.
+
+This reaches PORTRAIT reels only, for the reason given one section up -- a landscape reel's column has no such token to match. Measured at the defaults on a 9:16 reel, 1638px window: column 673x601 -> 950x857, video 337x599 -> 569x855, caption 335 -> 380.
+
+**The third term is the reel's height cap, expressed as a width.** Since 2026-09-12 the value is `min(100%, var(--u-reel-width), calc(var(--u-reel-height) * 9 / 16 + var(--u-reel-media-info)))`, and that third term is what replaced a rule that used to collapse the padding box and give it a fixed height. The arithmetic runs backwards from the box: the media is the column minus the caption, its height is that width times 16/9, so the column that produces a height of H is `H * 9 / 16 + caption`. Bound the column and the `padding-bottom:177.778%` box keeps its own ratio for free -- no ratio matching, no collapse, nothing to keep in step with Instagram's spelling of the percentage.
+
+Why it had to be the column and not the box: `max-height` on a percentage-padding box is inert, with or without `box-sizing: border-box`, because a border box cannot shrink below its own padding. That is measured in the feed reel notes above, and it is the same reason the feed's 125% cap sits on the anchor rather than the box.
+
+Measured at a 1638x900 window, as `u-reel-width`/`u-reel-height` -> column / box: 950/950 -> 914 / 533x948; 950/600 -> 718 / 337x598; 950/400 -> 605 / 224x398; 950/1400 -> 950 / 569x1012; 2000/400 -> 605 / 224x398; 600/1400 -> 600 / 219x389. Every box reads h/w 1.778. Whichever term is tighter binds, and the box never leaves the ratio.
+
+Two consequences worth knowing before touching it. With both settings at 950 the height term binds first, so the effective default column is 914px rather than the 950 the width setting reads. And the old rule's `95vh` term is gone, so nothing keeps the reel inside the window any more: at the 950 default on a 900px-tall window the box is 948 tall and the page scrolls. That was the deliberate trade for making the height a setting -- putting `min(95vh, var(--u-reel-height))` back would restore the ceiling at the cost of the setting doing nothing above the window's height.
+
+The `9/16` is written for 9:16 and is conservative for anything shallower: a portrait reel at, say, 4:5 would carry the token, so it would take this column, but it would come out under its height budget rather than filling it. Nothing shallower than 9:16 has ever been captured on a post page. Same trade the feed's `16/9/1.25` term makes, and the reason the constants are written unreduced in both places.
+
+
+## The reel stage's `min-height` (measured, NOT in the style)
+
+Recorded so it is not re-derived and added. The dark stage Instagram puts behind a reel -- the column's `> div > div` that holds the video -- carries `min-height: 450px` in the saved CSS and centres the video inside itself, so on a snapshot any setting that makes the media box shorter than that shows the surplus as a dark band above and below. Measured on the 9:16 snapshot at `u-reel-height: 400`: stage 225x450 against a 224x398 box, 26px each side, and much more at a small `u-reel-width`, where the width term binds first. On those numbers the band appears below `u-reel-height` 450, or below about `u-reel-width` 633 (`450 / 1.778 + 380`), and both sliders start at 400.
+
+`main > div > div.xvc5jky > div > div:has(video) { min-height: 0 !important }` closes it: band 26px -> 0 with the box unchanged, matching 1 on every reel page and 0 on every carousel, single photo, feed, modal and `/reels/<id>/` page, with `scoped.py --diff` reporting `min-height` and `min-block-size` on one element per reel snapshot and nothing else anywhere.
+
+**The live check found no band, so the rule was removed before publishing.** The offline measurement is not wrong about the saved page -- the floor really is there and really does produce the band -- but something on the live site overrides or avoids it, and what that is has not been established. This is the clearest case in the project of a snapshot measurement that is internally consistent, reproducible, and still not a fact about Instagram. Reproduce the band live before writing the rule back.
+
+`align-self: flex-start` was tried alongside it and changes nothing even on the snapshot: the row's height came from the stage's own floor, not from the caption column stretching it.
+
+
+## `main div[style*="padding-bottom"][style*="177"]` (removed 2026-09-12)
+
+The 9:16 box collapse: `padding-bottom: 0; height: min(95vh, 950px)`. Removed, and **do not write it back** -- the column arithmetic above does the same job without a fixed height, without matching a ratio, and adjustably.
+
+Why it had to go rather than have its constant parameterised. The video is `object-fit: contain`, so forcing the box to a height the box's width does not imply makes the video letterbox inside it. Measured at the defaults before removal: a 950px column gave a 569x855 box holding a video visible at 481x855, an 88px dead band on each side; at 673 the box was 292x855 with bands above and below instead; at 1200 and 1600 the visible video stayed 481x855 and only the bands grew. So the width setting stopped changing the reel at all past about 861px of column, and the two settings could not compose.
+
+One fact from that rule worth keeping. **On the feed the selector matched a photo**: `Instagram_feed2.html` article 10 is a sponsored single photo in a `padding-bottom:177.8%` box -- alt text "Photo by ...", no `<video>` and no `/reels/` link in the article -- so unscoped it would have collapsed a photo's box. That was the concrete argument for scoping the block by URL rather than trusting a selector guard, and it still applies to every rule in the block.
+
+Also from it: 177.778% is the only portrait reel ratio ever captured on a post or reel page, and a census of every inline `padding-bottom` box across all twenty-one snapshots found no `<video>` in any 133% box on any page -- **no 3:4 reel has ever been captured**, on a post page or on the feed. On the feed it could not be, since Instagram flattens anything taller than 4:5 to 125%. So the shape the removed rule could not reach, and the new arithmetic sizes conservatively, is one nothing has ever measured.
+
+
+## The carousel and single-photo rules (same block)
+
+Everything from here down was its own `@-moz-document` block until the merge described at the top of this section. It is written about the two /p/ paths, where all of it was measured, and it reaches the reel path as well.
+
+Both `/p/` paths render the same layout. Two carousel snapshots, one of each path, agree on every selector count and on the whole height chain down to identical computed values, so one block covers both. A later pair of reel snapshots, again one of each path, agrees the same way -- see the reel block above, which is where a reel on these URLs is handled.
+
+Nothing in the feed section reaches these pages: they carry no `min(470px` anywhere. The column is Instagram's own --x-maxWidth (stock `min(100%, 785px)`, the same token name the reel block above uses) and each slide frame carries an inline literal width, with the slide offsets written as multiples of it.
+
+Widening the column does not enlarge anything by itself. Forcing --x-maxWidth larger widens the column and leaves the media at its original size, because the inline slide width is what governs; the extra space is empty. Overriding that slide width with a percentage instead collapses the media to zero, the same hazard the feed's `:not(li *)` guard exists for. zoom is the one lever that changes the media's size, and it carries the inline translateX offsets with it, so slide alignment survives.
+
+So the column width below is not there to enlarge the media. It is there to make room for it: the media area is the column width minus the caption column, and once the caption is widened to match a reel page the stock 785px no longer fits a zoomed carousel.
+
+Carousels and single photos, which are two different shapes handled by two separate groups of rules below. Each of those two shapes comes in turn in TWO layouts, and the split is the same one both times: Instagram gives a 3:4 post the class `.xf68679` and an inline `--x-maxWidth:min(100%,785px)` on its column, and gives a square post neither. So a square carousel is built like a square single photo, not like a 3:4 carousel, and the token every other rule in this block is guarded on is simply absent from it. A reel on one of these URLs is not left stock either -- it is handled by the reel block above, whose URL pattern covers these two paths as well, because a reel here renders the same layout as /<user>/reel/<id>/ down to the pixel.
+
+Three post shapes, then, sharing two URL patterns, and every rule in both blocks is kept in its own lane by a SELECTOR guard rather than by the URL: a carousel by its slide list, a reel by its video, a single photo by a photo box with neither of those present. Do not loosen one by guesswork; the whole point is that each boundary was measured against every snapshot.
+
+
+## `main > div > div.xvc5jky:has(li[style*="translateX"])`
+
+The caption column, for EVERY carousel shape. These pages lay out like a reel page: media and caption side by side inside one column. Stock, a 3:4 column is 785px and splits 449 media + 335 caption; a square column is the whole content area and splits 1262 media + the same 335 caption.
+
+The reader is one Instagram declaration, `.x4h1yfo { width: var(--media-info) }`, one match per post page. Instagram declares `--media-info` on `:root`, and `._aa4c`, its other declaring element, is not on the path between this container and `.x4h1yfo` -- measured on all three carousel snapshots. So a declaration HERE beats the inherited one on its own and needs no `!important`: importance only breaks ties within one element's cascade, and nothing else declares the token on this element. That is the form CLAUDE.md asks for, and it replaced a `:root:has(...) { ... !important }` rule that did the same job.
+
+The replacement was measured rather than assumed: `scoped.py --diff` reports the two 3:4 carousels moving 712 and 735 CUSTOM properties and ZERO standard ones -- the token relocating from `:root` to the container with nothing rendering differently -- and zero changes of either kind on the other eleven snapshots.
+
+Reselecting it this way fixed two things beyond the move. The old `:root` guard also matched the saved FEED, where `main div[style*="--x-maxWidth"]` is present; nothing reads `--media-info` there so it never rendered, but it was kept harmless only by the URL scoping, the same latent hazard the reel block's `:root` rule still has. And the old guard required `--x-maxWidth`, which a SQUARE carousel does not have, so the setting simply never reached one.
+
+The guard is `:has(li[style*="translateX"])`, the slide list only a carousel has. Counted across all twenty-one snapshots it matches 1 on each of the four carousel pages and 0 on every other -- both feeds, all seven reels, all six single photos, /reels/<id>/, and the /p/<id>/ modal. That last zero matters for the same reason it does further down: this block's URL pattern does select the modal.
+
+Why the guard has to stay: widening the caption column is only safe when the media is widened or scaled to match. Without it, a reel on one of these URLs would take the wider caption from HERE while the reel block above also widened its media, and a single-media photo post would take it with nothing compensating -- the second is exactly the bug fixed on reel pages above.
+
+
+## `main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(li[style*="translateX"])`
+
+The width cap, for every carousel whose column carries no `--x-maxWidth`, and the counterpart of the single-photo cap at the bottom of this file. The token every other carousel rule in this block uses is not a lever on such a column; `max-width` on the column is, exactly as it is for a square single photo. It reads `--u-post-photo-width` rather than `--u-post-width` for the same reason: the shape it was written to bring into line is the square single photo, and the two should land on the same width.
+
+This note said "SQUARE carousels only" until 2026-09-12, when `Instagram-p-id(carousel75).html` captured a **4:3 landscape carousel** and it turned out to have no `--x-maxWidth` either. So the guard is not a test for squareness — it is a test for "Instagram did not give this column `.xf68679`", and square and landscape carousels both answer yes. Measured at the defaults, 1638px window: column 1598 → 1150, caption 335 → 380, the same numbers the square carousel gives. Its slide boxes are `75%` and `74.9712%` on the same page, so the ratio spellings are continuous here as everywhere else — nothing in this rule reads them, which is why that costs nothing. The setting label calls this "total width of photo and caption"; it governs these carousels too.
+
+The guard `:not([style*="--x-maxWidth"])` is on the element ITSELF, not `:not(:has(...))`. The token is an inline style on `.xvc5jky` directly -- the same element -- so a `:has()` spelling matches nothing and would silently cap the 3:4 carousels too, putting `--u-post-photo-width` in a fight with `--u-post-width`. Measured: the attribute form matches 1 on the square carousel and 0 on both 3:4 carousels.
+
+Measured at the defaults on the square carousel snapshot, 1638px window: column 1598 -> 1150, caption 335 -> 380, media area 1263 -> 770. The square single photo lands at 770 from the same settings, which is the point.
+
+KNOWN ARTIFACT, and do not try to "fix" it against a snapshot. Each slide frame carries an inline literal `width:<n>px` that Instagram's JS computed from the container AT LOAD, with the slide offsets written as multiples of it -- 1262 on this snapshot, against a stock media area of 1263. SingleFile freezes both. So on the saved page the cap narrows the container while the frozen slide stays 1262, and any measurement taken there reports the slide overflowing its 770px viewport by 493px. That number is an artifact of the capture, not a prediction. **Confirmed live on 2026-09-11**: with the style applied, the slides resize correctly at every value of `--u-post-photo-width` and each lands accurately in the frame. Instagram re-derives the slide width and the offsets from the container, exactly as it does for an unstyled page when the viewport is resized. So the cap alone is correct and complete here, and any offline measurement of this snapshot that reports an overflow is measuring the freeze, not the rule. Do not add machinery to "fix" it.
+
+No zoom rule accompanies this cap, and none is needed: because Instagram re-derives the slide from the container, capping the container is the whole job. The 3:4 carousel had such a rule until 2026.9.11.4 and it turned out to do nothing live, so it was removed along with its setting -- this cap is now the pattern both carousel shapes follow. A `container-type: inline-size` + `tan(atan2())` version was built and measured before the live check and is NOT in the style: it hit a zoom/`cqw` feedback loop (0.63 computed where 0.61 was wanted) and, being a reconstruction of the very number the snapshot freezes, could not be validated by any offline test. It is recorded here so it is not attempted again.
+
+
+## `main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(video)`
+
+Landscape reels on the post and reel pages, added 2026-09-12. It is the square-carousel cap one section up with `:has(video)` in place of the slide list, and it sets the caption column in the same rule.
+
+The bug it fixes was reported live: reels at `56.2696%`, `88.8614%`, `75%` and `69.4981%` on reel and post pages responded to NOTHING except the font size and line spacing. Four snapshots were then captured, two on each URL shape, and the cause measured -- their column carries no inline `--x-maxWidth`, so all three reel rules further up, every one of them anchored to that token, matched zero elements. `[style*="--x-maxWidth"]` matches 0 on the whole page in all four.
+
+It reads `--u-post-photo-width` rather than `--u-reel-width` because it is the no-token branch, the same branch a square carousel and a square photo take, and those shapes should land on one width. The setting's label was widened to "photo/video" to match.
+
+`--media-info` in the same rule, and without `!important`: the column sits closer to the caption than Instagram's `:root` declaration, exactly as in the carousel caption rule. Adding the cap alone left the caption at Instagram's stock 335px -- a separate report from the same session, and the reason the two declarations live together here.
+
+Measured at the defaults, 1638px window, stock -> styled, as column / video / caption: `reel56` 1598x712 / 1262x710 / 335 -> 1150x452 / 769x433 / 380; `reel88` 1598x1123 -> 1150x685 / 769x683 / 380; `reel75` 1598x949 -> 1150x579 / 769x577 / 380; `reel69` 1598x879 -> 1150x536 / 769x534 / 380.
+
+Nothing else moves. `scoped.py --diff` over all twenty-one snapshots reports changes on exactly those four and 0 standard / 0 custom on every other page, the three 9:16 reels included -- they carry the token, so the `:not()` excludes them -- and no `font-size`, `line-height` or `zoom` appears in any property list.
+
+The overlap to know about: a MIXED carousel whose column has no token matches this rule and the slide-list cap above at once. Both set `max-width` to the same value, so it is harmless.
+
+
+## `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])`
+
+The column, and since 2026-09-11 the ONLY thing that sizes a 3:4 carousel's media. Instagram fills whatever media area the column leaves it, so the media comes out as the column width minus the caption column, exactly: measured at 785 -> 356, 950 -> 521, 1200 -> 771.
+
+It needs its own setting rather than the reel page's --u-reel-width, whose 950px default leaves a 3:4 carousel narrower than intended. The 1150px default here is a picked compromise, not a derived number, and is the user's to set.
+
+A `zoom` rule used to sit below this one, driven by a `--u-post-media-scale` setting, on the belief that widening the column alone left the media at its original size. That was an artifact of the saved page, where each slide's inline `width:<n>px` is frozen. Live, Instagram re-derives it, and the zoom changed nothing at all -- see the removal record in docs/removed.md. Do not reintroduce one without a live measurement.
+
+This rule reaches 3:4 carousels ONLY — the caption rule above reaches every carousel shape. A square carousel is built with no `--x-maxWidth` on its column at all, and is capped by `max-width` instead, one rule up; a 4:3 carousel was measured on 2026-09-12 and is built the same way, so it goes there too. All three shapes are handled the same way: cap the column, let Instagram fill what is left. 3:4 remains the only shape this rule, and therefore `--u-post-width`, still reaches.
+
+
+## `main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video))`
+
+Single photos, which Instagram lays out in TWO different ways depending on the media's shape. That, not any one size, is what makes them inconsistent with each other.
+
+A portrait photo's column carries Instagram's .xf68679, whose `max-width: var(--x-maxWidth)` caps it: the 3:4 snapshot writes `--x-maxWidth:min(100%,785px)` inline and renders 449x599, the same numbers a carousel starts from. A square photo's column does not carry that class and has no inline token at all, so nothing caps it and it fills the content area -- 1262x1262 at a 1638px window, and wider on a wider screen. A landscape photo's column behaves like the square one: the 16:9 snapshot carries neither the class nor the token and renders 1262x712 in a 1598px column, and the 4:3 one captured on 2026-09-12 is built identically, 1262x947 in the same 1598px column. Square, 3:4 and 16:9 were each measured on both paths, and as with carousels and reels the two paths agree to the pixel; 4:3 exists on the `/p/` path only.
+
+Landscape is the shape that wants NO correction. Uncapped is the right answer for it -- the media is already large and already the full width of the content area, and the height its own ratio gives it is modest. Only the two shapes that Instagram gets wrong are capped below: the portrait one because it comes out smaller than everything else on the page, the square one because it is unbounded. What the three had in common was the caption column, so that is what the rule above sets for all of them.
+
+So --x-maxWidth is NOT the lever here, however well it works one block up. Setting it on the square page changes nothing at all: measured at 900px and at 1300px, the column's computed max-width stayed `none`, because the element that would read the token is missing the class that reads it. A plain max-width works on both capped shapes, and has the side benefit of adding no sixth design-token override.
+
+No zoom either, unlike the carousel rule above. A single photo's `padding-bottom` box takes its width from the column, so the media is the column minus the caption, linearly -- measured at 900/1102/1150/1300 with the caption at 429, the media came out 470/672/721/964 wide. Nothing needs scaling and no aspect ratio is matched, so unlike the carousel settings the WIDTH is not calibrated against one ratio; the ratio is read only to decide whether the cap applies at all.
+
+What the cap is for is bringing the two shapes to the same width; the default is a picked compromise, not a derived number, and any value is the user's to set. Measured with the whole style applied and this setting at 1100, the default at the time: square 670x670, 3:4 670x893, against the carousel's 674x898 and the reel's 520x855. Four to five pixels from a carousel on both axes, and identical to each other in width, which is the point. Landscape is deliberately outside that comparison at 1168x659, Instagram's own width less the widened caption.
+
+Three guards, each load-bearing. `:has(div[style*="padding-bottom"] > img)` requires a photo box in this column. `:not(:has(li[style*="translateX"]))` excludes a carousel. `:not(:has(video))` excludes a reel, which this block's URL pattern also selects. Counted across all twenty-one snapshots the three together match 1 on each of the six single-photo pages and 0 on every other page -- the feed, both carousels, both reels, /reels/<id>/, and the /p/<id>/ modal. That last zero is the one that matters: this block's URL pattern does select the modal, and every other rule here is kept off it only by a guard the modal happens to fail.
+
+.xvc5jky is the post column's own class, carried by all three post shapes -- 1 on every post page, 0 on the feed, the modal and /reels/<id>/. Dropping it is not safe. Without it the guards also match the "more posts" grid below the post, and on a reel page that shrank a grid cell from 532x709 to 382x510. Its failure mode is the safe direction: if Instagram churns the class the rule stops applying and single photos return to stock.
+
+--media-info is declared on the column rather than on :root for two separate reasons. The first is that `:root:has(...)` cannot express this guard at all -- :has() does not nest, so a :root selector wrapping these guards is invalid and Firefox drops the whole rule with no error. The second is that it does not need to: the column sits closer to the caption than Instagram's own declaration, which is on :root, and on every post snapshot each element under the column inherits a single value with nothing redeclaring it in between. !important is therefore insurance, not necessity -- the rule measured identical without it on the three single-photo pages that existed when it was written, but the snapshot's CSS is pruned and the live sheet may carry a declaration the snapshot dropped.
+
+The caption column is set for every shape, landscape included; only the width cap below is withheld from landscape.
+
+
+## `main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)):has(div[style*="padding-bottom:1"] > img, div[style*="padding-bottom: 1"] > img)`
+
+The width cap, for SQUARE AND PORTRAIT photos only.
+
+**Both landscape shapes are excluded by the same guard, and receive exactly the same treatment.** The 4:3 snapshot captured on 2026-09-12 fails this fourth guard for the identical reason the 16:9 one does — `75%` and `56.4394%` both start with a digit other than 1 — so each keeps Instagram's 1598px column and takes only the caption-column setting from the rule above: 16:9 goes 1598x714 → 1598x689, 4:3 goes 1598x949 → 1598x915, in both cases the caption widening and nothing else. There is no rule-level distinction between them, so any judgement that one of the two looks right and the other does not is about appearance, not about coverage, and changing it means moving this guard rather than finding the rule that treats them differently.
+
+A landscape photo gets no cap: Instagram's own layout for one is already good, and capping the column to a width chosen for a portrait post is what made it worse. The 16:9 snapshot measures 1262x712 stock in a 1598px column; capping the column to 1100px took it to 670x378 -- well under half the area, and short enough to leave the media sitting in a letterboxed band beside a taller caption. Square and portrait have the opposite problem and still need the cap: uncapped, the square post fills the content area at 1262x1262 and keeps growing with the window.
+
+So the fourth guard selects "ratio at or above 100%". It reads the leading digit of the padding-bottom percentage, which separates the two cases: landscape is below 100% and always starts 5-9, while square, portrait and reel ratios are at or above 100% and all start with 1. Nothing Instagram accepts is tall enough to reach a leading 2, which is the only thing that would break the correspondence.
+
+Measured across the snapshots, post media only -- the 133.333% boxes that appear on every post page are the "more posts" grid, not the post: landscape 56.4394% and 75%/74.9712%, square 100%, portrait 125% and 133.317/133.333%, reel 177.778%. A 9:16 PHOTO also exists, though not on a post page: `Instagram_feed2.html` article 10 is a sponsored single photo in a `padding-bottom:177.8%` box with no video in the article. So the leading-digit correspondence has now been checked against a photo as tall as the tallest reel, and the cap would apply to such a post if one were ever captured on a `/p/` page -- what that looks like at 1150px is untested. So portrait goes at least to 3:4, not the 4:5 (125%) this note previously claimed as the ceiling. INFERENCE, NOT MEASURED: that landscape bottoms out at 1.91:1 (52.36%) and that nothing reaches 200% both come from Instagram's documented upload limits, not from any capture -- the widest thing ever measured here is 56.4394%. The guard does not depend on either bound being exact, only on the 100% boundary and on no accepted ratio reaching 200%.
+
+Matching one digit rather than a whole percentage is the rule the top of this file states, and for the reason it states: a single saved feed carried 3:4 as 133.333%, 133.33333333333331% and 133.31719128329297%. Both spellings of the colon are listed because inline-style whitespace is unstable -- server-rendered markup writes `padding-bottom:56.4394%` and a React re-render rewrites it as `padding-bottom: 56.4394%`, on the same element, after navigating away and back. A comma inside one :has() is a list, not nesting, so this is valid where :root:has(...) of these guards would not be.
+
+Measured across all twenty-one snapshots: 1 on each of the three square and portrait post pages, 0 on the three landscape ones, 0 everywhere else. At the defaults, landscape 1168x659 in an uncapped 1598px column, square 670x670, 3:4 670x893 -- so the two shapes that were inconsistent with each other still come out identical in width, and landscape keeps Instagram's.
+
+Failure mode is the safe direction, the same as .xvc5jky's: if the guard stops matching, a square photo returns to Instagram's stock layout rather than breaking.

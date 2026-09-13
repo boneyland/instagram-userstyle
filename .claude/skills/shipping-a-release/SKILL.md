@@ -5,7 +5,9 @@ description: Use when publishing a new version of this userstyle to userstyles.w
 
 # Shipping a release to userstyles.world
 
-The style is published to [userstyles.world](https://userstyles.world/) (USw)
+The style is published to [userstyles.world](https://userstyles.world/style/30052/instagram-desktop-site) (USw)
+and that page is the authority on which version is live -- read the version off
+it rather than inferring it from the uploaded copies in the repo.
 under the user `boneyland`. Installers get auto-updates from USw once a new
 version is live.
 
@@ -47,7 +49,7 @@ Mirroring below before suggesting otherwise.
 3. **Check `@description`.** It describes what the style does and deliberately
    does **not** state the browser floor — do not add it there. The floor lives
    in `README.md` under Requirements and in `USw-notes.md`, and raising it means
-   editing both. See Open items in `CLAUDE.md` on the Chromium claim.
+   editing both. See `docs/open-questions.md` on the Chromium claim.
 
    Check the **settings** too: `README.md` carries the table of defaults and
    `USw-notes.md` names individual settings in its bullets, so a renamed or
@@ -55,14 +57,22 @@ Mirroring below before suggesting otherwise.
    not in the pane.
 
 4. **After uploading**, save the uploaded file alongside the previous ones as
-   `Instagram-YYYYMMDD-uploaded.user.css` and point the `CHANGELOG.md`
-   convention at it: the next entry is written as a comparison against the
-   newest uploaded copy, not against the working file.
+   `Instagram-YYYYMMDD-uploaded.user.css`, or
+   `Instagram-YYYYMMDD.R-uploaded.user.css` if the day already holds a
+   published release — the filename mirrors `@version`, so a second release
+   on one day forces the suffix onto both copies. Rename the existing one
+   rather than leaving it ambiguous; earlier days keep their plain form.
+   Then point the `CHANGELOG.md` convention at the new copy: the next entry
+   is written as a comparison against the newest uploaded copy, not against
+   the working file. Identify the newest by reading `@version` out of the
+   candidates, not by sorting filenames.
 
 5. **Write the notes.** Two files, two audiences:
 
-   - `CHANGELOG.md` — release notes per `@version`, and the record of what was
-     removed and why. Mechanism and internals belong here.
+   - `CHANGELOG.md` — release notes per `@version`. Mechanism and internals
+     belong here. Anything **removed**, or deliberately **not done**, goes in
+     `docs/removed.md` under a subject heading instead, with a one-line pointer
+     left in the entry; that file is the record that outlives the release.
    - `USw-notes.md` — the user-facing version, for pasting into the Notes field
      on USw. Mechanism and internals stay out of it.
 

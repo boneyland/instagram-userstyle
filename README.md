@@ -83,13 +83,14 @@ The two 9:16 reel settings bound the same thing from different directions, and w
 | --- | --- |
 | `Instagram.user.css` | The style. The deliverable. |
 | `Instagram-2026*-uploaded.user.css` | Previously published versions, kept for diffing. |
-| `CHANGELOG.md` | Release notes per version, and the record of what was removed and why. |
+| `CHANGELOG.md` | Release notes per version. Earlier releases in `docs/changelog-archive.md`. |
+| `docs/removed.md` | Why something is **not** in the style, by subject, with the evidence. |
 | `USw-notes.md` | The user-facing changelog, for the Notes field on userstyles.world. |
-| `docs/rule-notes.md` | Why each rule is written the way it is, and what was measured to get there. |
+| `docs/rule-notes*.md` | Why each rule is written the way it is, and what was measured to get there. The index is in `docs/rule-notes.md`; the notes are split by `@-moz-document` block. |
 | `docs/token-overrides.md` | Why the design-token overrides work, and how to measure a token's reach. |
 | `verify.py`, `scoped.py` | Verification harness. |
 
-The style itself carries no comments beyond its metadata header — the reasoning lives in `docs/rule-notes.md`, keyed by selector. Read the note for a rule before loosening a guard or changing a number.
+The style itself carries no comments beyond its metadata header — the reasoning lives in `docs/rule-notes.md` and the two files it indexes, keyed by selector. Read the note for a rule before loosening a guard or changing a number.
 
 ## Verifying a change
 
