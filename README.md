@@ -46,7 +46,7 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 
 ## Settings
 
-Fifteen, all exposed through the Stylus settings pane.
+Sixteen, all exposed through the Stylus settings pane.
 
 | Setting | Default |
 | --- | --- |
@@ -67,15 +67,17 @@ Fifteen, all exposed through the Stylus settings pane.
 | Reel/post pages: total width of a landscape reel and caption | 1500px |
 | Reel/post pages: width of the caption column | 380px |
 
-Nothing is sized directly. Every width setting caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
+On the reel and post pages nothing is sized directly. Every width setting there caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
 
 The two 9:16 reel settings bound the same thing from different directions, and whichever is tighter wins: the width setting caps the column, and the height setting caps it by the width a 9:16 video would need to reach that height. Set either low and the reel simply gets smaller, keeping its proportions.
+
+The feed settings are more literal. The media column is set as a share of the feed width and the caption column takes what is left, and the two caps on feed media — maximum width of portrait reel, maximum height of a single photo or reel — bound the media element itself rather than a column around it.
 
 ## Known limitations
 
 - **A portrait reel that is not 9:16 is sized conservatively.** The height setting works out the column a 9:16 video would need, so a shallower portrait reel comes out under its height budget rather than filling it. Landscape reels and 9:16 reels are both exact. No capture of a portrait reel at any other shape exists, so this is reasoning from the arithmetic rather than a measurement.
 - **A reel whose own frame is not 9:16 sits on a dark backing.** Instagram puts it in a 9:16 box and the video is letterboxed inside it. Nothing in a stylesheet can recover those pixels — filling the box would mean cropping the video's sides.
-- **A reel that is genuinely 4:5 is cropped left and right in the feed.** Instagram flattens anything taller into the same 4:5 box, so a 9:16 reel cannot be told apart from a true one, and giving a tall reel back its height is the same thing as taking the sides off a short one. Lowering "Feed: maximum width of reel" stops at 9:16, so a tall reel is never cropped on its sides at any setting.
+- **A reel that is genuinely 4:5 is cropped left and right in the feed.** Instagram flattens anything taller into the same 4:5 box, so a 9:16 reel cannot be told apart from a true one, and giving a tall reel back its height is the same thing as taking the sides off a short one. Lowering "Feed: maximum width of portrait reel" stops at 9:16, so a tall reel is never cropped on its sides at any setting.
 - **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
 
 ## Repository layout
