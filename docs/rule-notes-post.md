@@ -54,7 +54,7 @@ Measured at a 1638x900 window, as `u-reel-width`/`u-reel-height` -> column / box
 
 Two consequences worth knowing before touching it. With both settings at 950 the height term binds first, so the effective default column is 914px rather than the 950 the width setting reads. And the old rule's `95vh` term is gone, so nothing keeps the reel inside the window any more: at the 950 default on a 900px-tall window the box is 948 tall and the page scrolls. That was the deliberate trade for making the height a setting -- putting `min(95vh, var(--u-reel-height))` back would restore the ceiling at the cost of the setting doing nothing above the window's height.
 
-The `9/16` is written for 9:16 and is conservative for anything shallower: a portrait reel at, say, 4:5 would carry the token, so it would take this column, but it would come out under its height budget rather than filling it. Nothing shallower than 9:16 has ever been captured on a post page. Same trade the feed's `16/9/1.25` term makes, and the reason the constants are written unreduced in both places.
+The `9/16` is written for 9:16 and is conservative for anything shallower: a portrait reel at, say, 4:5 would carry the token, so it would take this column, but it would come out under its height budget rather than filling it. Nothing shallower than 9:16 has ever been captured on a post page, but the premise is no longer inference: on 2026-09-14 the user checked **3:4 reels live on both the reel and the post pages** and reports them responding to the portrait-reel settings as expected. That is what carrying the token predicts -- a reel with no token falls to `.xvc5jky:not([style*="--x-maxWidth"]):has(video)` and takes `--u-reel-landscape` instead -- so the token boundary now has a live data point at 133% for a video, where before it had only photos and carousels. The conservatism was then measured too, on the same day and the same live 3:4 reel: 1638px viewport, `--u-reel-height` 1200, `--u-reel-width` 2000 (high enough not to bind -- the user reports it stopping to matter past a point, which is the `min()` working), caption at its 380 default. Column `1200 * 9/16 + 380` = 1055, media 1055 - 380 = 675 against 674 measured, and a 3:4 video in 674px is `674 * 4/3` = **898.667** -- exactly the height reported. So the general form is `H * 9/16 * R` for a source of ratio R: 9:16 reaches the budget exactly, 3:4 reaches three quarters of it, 4:5 would reach 70%. Conservative in the safe direction, as designed, and now a measurement rather than a prediction. Same trade the feed's `16/9/1.25` term makes, and the reason the constants are written unreduced in both places.
 
 
 ## The reel stage's `min-height` (measured, NOT in the style)
@@ -67,6 +67,8 @@ Recorded so it is not re-derived and added. The dark stage Instagram puts behind
 
 `align-self: flex-start` was tried alongside it and changes nothing even on the snapshot: the row's height came from the stage's own floor, not from the caption column stretching it.
 
+**2026-09-14: the user ruled the black surround stock Instagram behaviour, not a fault.** Shown a second screenshot of a small reel with black above and below, the answer was that this is simply what Instagram does at that size and needs no fixing. The rule stays out regardless of whether the floor reproduces live, and the behaviour is not to be written up as a limitation. See `docs/removed.md` for the README bullet that was retired with it.
+
 
 ## `main div[style*="padding-bottom"][style*="177"]` (removed 2026-09-12)
 
@@ -76,7 +78,7 @@ Why it had to go rather than have its constant parameterised. The video is `obje
 
 One fact from that rule worth keeping. **On the feed the selector matched a photo**: `Instagram_feed2.html` article 10 is a sponsored single photo in a `padding-bottom:177.8%` box -- alt text "Photo by ...", no `<video>` and no `/reels/` link in the article -- so unscoped it would have collapsed a photo's box. That was the concrete argument for scoping the block by URL rather than trusting a selector guard, and it still applies to every rule in the block.
 
-Also from it: 177.778% is the only portrait reel ratio ever captured on a post or reel page, and a census of every inline `padding-bottom` box across all twenty-one snapshots found no `<video>` in any 133% box on any page -- **no 3:4 reel has ever been captured**, on a post page or on the feed. On the feed it could not be, since Instagram flattens anything taller than 4:5 to 125%. So the shape the removed rule could not reach, and the new arithmetic sizes conservatively, is one nothing has ever measured.
+Also from it: 177.778% is the only portrait reel ratio ever captured on a post or reel page, and a census of every inline `padding-bottom` box across all twenty-one snapshots found no `<video>` in any 133% box on any page -- **no 3:4 reel has ever been captured**, on a post page or on the feed. One has now been *seen*: the user checked 3:4 reels live on the reel and post pages on 2026-09-14 and they take the portrait-reel rules. Still no capture, so nothing offline exercises this path. On the feed it could not be, since Instagram flattens anything taller than 4:5 to 125%. So the shape the removed rule could not reach, and the new arithmetic sizes conservatively, is one nothing has ever measured.
 
 
 ## The carousel and single-photo rules (same block)

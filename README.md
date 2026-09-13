@@ -32,17 +32,17 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 
 | Page / modal   | URL shape    | Single photo     | Carousel       | Reel                  |
 | -------------- | ------------ | ---------------- | -------------- | --------------------- |
-| **Feed**            | `/`           | ✅any ratio — verified 1:1, 4:5, 3:4, 4:3, 3:2, 9:16 (ad) | ✅ any ratio — verified 4:5, 3:4, 4:3, incl. mixed photo+video | ✅ 125% box, 4:3, 16:9 |
-| **Post permalink**         | `/p/<id>/`<br>`/<user>/p/<id>/` | ✅ 1:1, 3:4  <br>⭕ 16:9, 4:3             | ✅ 1:1, 3:4, 4:3                           | ✅ 9:16, 16:9, 4:3 |
-| **Reel permalink**                | `/<user>/reel/<id>/`       | ✅ 1:1, 3:4  <br>⭕ 16:9, 4:3               | ✅ 1:1, 3:4, 4:3                        | ✅ 9:16, 16:9, 4:3 |
-| **Reels, plural path**        | `/reels/<id>/`       | —              | —                  | ❌                     |
-| **Reel floating dialog**       | `/reel/<id>/`                   | —                       | —                         | ❌                     |
-| **Post modal over profile grid**               | `/p/<id>/`            | ❌                 | ❌            | ❌                     |
-| **Post modal over feed**                 | `/p/<id>/`            | ❌                     | ❌              | ❌                     |
-| **Grid pages** (profile, explore, hashtag, saved, tagged) | various          | — thumbnails only              | —                           | —                     |
-| **Stories**                             | `/stories/...`            | —                   | —                          | —                     |
+| **Feed**                                                  | `/`                             | ✅any ratio — verified 1:1, 4:5, 3:4, 4:3, 3:2, 9:16 (ad) | ✅ any ratio — verified 4:5, 3:4, 4:3, incl. mixed photo+video | ✅ 125% box, 4:3, 16:9                        |
+| **Post permalink**                                        | `/p/<id>/`<br>`/<user>/p/<id>/` | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3,                          | ✅ 1:1, 3:4, 4:3 ❓4:5                                          | ✅ 9:16, 16:9, 4:3, and other landscape reels |
+| **Reel permalink**                                        | `/<user>/reel/<id>/`            | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3                           | ✅ 1:1, 3:4, 4:3 ❓4:5                                          | ✅ 9:16, 16:9, 4:3, and other landscape reels |
+| **Reels, plural path**                                    | `/reels/<id>/`                  | —                                                        | —                                                             | ❌                                            |
+| **Reel floating dialog**                                  | `/reel/<id>/`                   | —                                                        | —                                                             | ❌                                            |
+| **Post modal over profile grid**                          | `/p/<id>/`                      | ❌                                                        | ❌                                                             | ❌                                            |
+| **Post modal over feed**                                  | `/p/<id>/`                      | ❌                                                        | ❌                                                             | ❌                                            |
+| **Grid pages** (profile, explore, hashtag, saved, tagged) | various                         | — thumbnails only                                        | —                                                             | —                                            |
+| **Stories**                                               | `/stories/...`                  | —                                                        | —                                                             | —                                            |
 
-✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ caption column widened, media left at Instagram's own width  ·  — shape cannot reach that URL
+✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ caption column widened, media left at Instagram's own width  ·  — shape cannot reach that URL  ·  ❓  Not verified
 
 ## Settings
 
@@ -76,8 +76,7 @@ The feed settings are more literal. The media column is set as a share of the fe
 ## Known limitations
 
 - **A portrait reel that is not 9:16 is sized conservatively.** The height setting works out the column a 9:16 video would need, so a shallower portrait reel comes out under its height budget rather than filling it. Landscape reels and 9:16 reels are both exact. No capture of a portrait reel at any other shape exists, so this is reasoning from the arithmetic rather than a measurement.
-- **A reel whose own frame is not 9:16 sits on a dark backing.** Instagram puts it in a 9:16 box and the video is letterboxed inside it. Nothing in a stylesheet can recover those pixels — filling the box would mean cropping the video's sides.
-- **A reel that is genuinely 4:5 is cropped left and right in the feed.** Instagram flattens anything taller into the same 4:5 box, so a 9:16 reel cannot be told apart from a true one, and giving a tall reel back its height is the same thing as taking the sides off a short one. Lowering "Feed: maximum width of portrait reel" stops at 9:16, so a tall reel is never cropped on its sides at any setting.
+- **A portrait reel shallower than 9:16 is cropped left and right in the feed.** Instagram flattens everything taller than 4:5 into one box and crops it to fill, so a 3:4 reel arrives indistinguishable from a 9:16 one and is treated as 9:16 — which costs it roughly 15% of its width at the default, and a quarter of it once the width setting is low enough to make the box a true 9:16. 3:4 reels are rare, but they are real. The trade is deliberate: giving a tall reel back its height is the same operation as taking the sides off a shorter one, and nothing on the page distinguishes them. A 9:16 reel is never side-cropped at any setting.
 - **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
 
 ## Repository layout

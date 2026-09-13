@@ -76,6 +76,10 @@ A dark band under a small reel was reported with a screenshot, and the snapshot 
 
 **It is not in the style.** The live check found the band did not occur, so the rule would have been machinery against a snapshot artefact. Recorded here because the snapshot measurement is reproducible and convincing on its own -- anyone re-deriving it offline will reach the same rule -- and because the discrepancy is unexplained: the floor is real in the saved CSS and something live evidently overrides or avoids it. Do not add the rule on the strength of an offline measurement; reproduce the band on the live site first.
 
+**2026-09-14, from the user: the black surround is Instagram's own behaviour and needs no fixing.** Shown again as a screenshot of a reel sized small, with black above and below it, and ruled not a problem -- it is what Instagram does at that size. So whether the `min-height` floor reproduces live is moot for the style: the rule stays out either way, and this is not a limitation to write up for users.
+
+That ruling retired a README *Known limitations* bullet, deleted the same day, which had generalised the screenshot into "a reel whose own frame is not 9:16 sits on a dark backing -- Instagram puts it in a 9:16 box and letterboxes it". Nothing supported it. Every landscape reel captured on a post or reel page sits in a box at its **own** ratio (`56.2696%`, `69.4981%`, `75%`, `88.8614%`), not a 9:16 one, so the shape it described has never been seen; the user has seen no reel taller than 9:16 and no genuine 4:5 video at all, and reports the feed carrying only 125% boxes and landscape videos. A snapshot cannot settle it either way in any case -- SingleFile strips the source and writes `poster="data:,"`, so a capture shows the box's ratio and never the frame's.
+
 ## Single photos
 
 ### No height cap — not done, 2026.9.11.1
