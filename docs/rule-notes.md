@@ -41,7 +41,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 - `article:has(a[href*="/reels/"]):not([role="dialog"] *) > .xdt5ytf`
 - `article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"][style*="125%"]`
 - `article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"][style*="125%"])`
-- `article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:not([style*="125%"]))`
+- `article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:not([style*="125%"]))` (removed 2026-09-14)
 - `article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="125%"])` (and its `> div` and `video`)
 - Media (section header)
 - `article:not([role="dialog"] *) img[aria-hidden="true"]`

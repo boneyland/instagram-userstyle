@@ -17,7 +17,7 @@
 @var range  u-media-column       "Feed: media width, as a % of feed width"                          [55, 20, 100, 1]
 @var range  u-caption-min        "Feed: minimum width of caption column before it moves underneath" [320, 150, 800, 10, "px"]
 @var range  u-media-max-height   "Feed: maximum height of a single photo or reel"                   [900, 300, 2000, 50, "px"]
-@var range  u-feed-reel-width    "Feed: maximum width of reel"                                      [550, 300, 2000, 10, "px"]
+@var range  u-feed-reel-width    "Feed: maximum width of portrait reel"                             [550, 300, 2000, 10, "px"]
 @var number u-carousel-scale-max "Feed: scale carousels by a maximum of (1 = off)"                  [1.5, 1, 6, 0.1]
 @var range  u-text-size          "Text: font size of usernames, captions and comments"              [14, 10, 24, 1, "px"]
 @var range  u-text-line-height   "Text: spacing between lines of that text"                         [18, 12, 36, 1, "px"]
@@ -176,11 +176,6 @@
 			calc(var(--u-media-max-height) / 1.25),
 			calc(var(--u-feed-reel-width) * 16 / 9 / 1.25)
 		);
-		margin-inline: auto;
-	}
-
-	article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:not([style*="padding-bottom:125%"]):not([style*="padding-bottom: 125%"])) {
-		max-width: var(--u-feed-reel-width);
 		margin-inline: auto;
 	}
 
