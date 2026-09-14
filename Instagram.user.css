@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.14.1
+@version        2026.9.14.2
 @namespace      userstyles.world/user/boneyland
 @description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable.
 @author         boneyland
@@ -22,7 +22,7 @@
 @var range  u-text-size          "Text: font size of usernames, captions and comments"              [14, 10, 24, 1, "px"]
 @var range  u-text-line-height   "Text: spacing between lines of that text"                         [18, 12, 36, 1, "px"]
 @var range  u-post-photo-width   "Reel/post pages: total width of photo/carousel and caption"       [1350, 400, 2000, 10, "px"]
-@var range  u-post-width         "Reel/post pages: total width of a 3:4 carousel post and caption"  [1350, 400, 2000, 10, "px"]
+@var range  u-post-width         "Reel/post pages: total width of a portrait carousel and caption"  [1350, 400, 2000, 10, "px"]
 @var range  u-reel-width         "Reel/post pages: total width of a portrait reel and caption"      [950, 400, 2000, 10, "px"]
 @var range  u-reel-height        "Reel/post pages: maximum height of a portrait reel"               [950, 400, 2000, 10, "px"]
 @var range  u-reel-landscape     "Reel/post pages: total width of a landscape reel and caption"     [1500, 400, 2000, 10, "px"]

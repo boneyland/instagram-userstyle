@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026.9.14.2
+
+Compared against `2026.9.14.1`, kept as `Instagram-20260914-uploaded.user.css`.
+
+One label, and a widening of what is known to sit behind it. Nothing renders differently and no saved setting value is affected.
+
+### `u-post-width` now says "portrait carousel"
+
+The label read **"Reel/post pages: total width of a 3:4 carousel post and caption"** and now reads **"Reel/post pages: total width of a portrait carousel and caption"**.
+
+The rule behind it is untouched. `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])` caps the column of any carousel whose column carries Instagram's inline `--x-maxWidth`, and it reads no ratio at all -- the ratio only ever entered through the label, which named the one shape that had been measured.
+
+What changed is the measurement. Both captured carousels on the token side are 3:4, so 3:4 was all the label could honestly claim. On 2026-09-14 the user checked a **4:5 carousel live on `/p/<id>/`, `/<user>/p/<id>/` and `/<user>/reel/<id>/`** and reported it responding to this setting. Only a column carrying the token can do that, so a 4:5 carousel sits on the portrait side alongside 3:4 and the old label under-claimed by one shape.
+
+"Portrait" stops there rather than running to 9:16: **no 9:16 carousel has been found anywhere**, live or captured, so the name covers two confirmed ratios rather than a range checked end to end. The rule would size a taller one identically if Instagram ever served one, since it reads no ratio. `docs/open-questions.md` carries both that gap and the fact that the 4:5 case was confirmed by response rather than by numbers -- no snapshot of one exists, and the inline value Instagram writes for a 4:5 column was not read.
+
+### Settings
+
+Still sixteen.
+
+| | |
+| --- | --- |
+| Relabelled | `u-post-width` -- "total width of a 3:4 carousel post and caption" -> "total width of a portrait carousel and caption". |
+
 ## 2026.9.14.1
 
 Compared against `2026.9.12.4`, kept as `Instagram-20260912.4-uploaded.user.css` -- so this entry is the whole of what an installer receives.

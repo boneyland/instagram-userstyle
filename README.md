@@ -30,11 +30,11 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 
 ## Coverage matrix — page × media shape (WIP)
 
-| Page / modal   | URL shape    | Single photo     | Carousel       | Reel                  |
-| -------------- | ------------ | ---------------- | -------------- | --------------------- |
-| **Feed**                                                  | `/`                             | ✅any ratio — verified 1:1, 4:5, 3:4, 4:3, 3:2, 9:16 (ad) | ✅ any ratio — verified 4:5, 3:4, 4:3, incl. mixed photo+video | ✅ 125% box, 4:3, 16:9                        |
-| **Post permalink**                                        | `/p/<id>/`<br>`/<user>/p/<id>/` | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3,                          | ✅ 1:1, 3:4, 4:3 ❓4:5                                          | ✅ 9:16, 16:9, 4:3, and other landscape reels |
-| **Reel permalink**                                        | `/<user>/reel/<id>/`            | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3                           | ✅ 1:1, 3:4, 4:3 ❓4:5                                          | ✅ 9:16, 16:9, 4:3, and other landscape reels |
+| Page / modal   | URL shape    | Single photo     | Carousel       | Reel  |
+| -------------- | ------------ | ---------------- | -------------- | ------------ |
+| **Feed**           | `/`            | ✅any ratio — verified 1:1, 4:5, 3:4, 4:3, 3:2, 16:9, 9:16 (ad) | ✅ any ratio — verified 4:5, 3:4, 4:3, incl. mixed photo+video | ✅ 125% box (3:4, 9:16), 4:3, 16:9    |
+| **Post permalink**                         | `/p/<id>/`<br>`/<user>/p/<id>/` | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3 ❓ 3:2     | ✅ 1:1, 3:4, 4:3, 4:5     | ✅ 3:4, 9:16, 16:9, 4:3, and other landscape reels |
+| **Reel permalink**                                        | `/<user>/reel/<id>/`            | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3 ❓ 3:2   | ✅ 1:1, 3:4, 4:3, 4:5  | ✅ 3:4, 9:16, 16:9, 4:3, and other landscape reels |
 | **Reels, plural path**                                    | `/reels/<id>/`                  | —                                                        | —                                                             | ❌                                            |
 | **Reel floating dialog**                                  | `/reel/<id>/`                   | —                                                        | —                                                             | ❌                                            |
 | **Post modal over profile grid**                          | `/p/<id>/`                      | ❌                                                        | ❌                                                             | ❌                                            |
@@ -61,7 +61,7 @@ Sixteen, all exposed through the Stylus settings pane.
 | Text: font size of usernames, captions and comments | 14px |
 | Text: spacing between lines of that text | 18px |
 | Reel/post pages: total width of photo/carousel and caption | 1350px |
-| Reel/post pages: total width of a 3:4 carousel post and caption | 1350px |
+| Reel/post pages: total width of a portrait carousel and caption | 1350px |
 | Reel/post pages: total width of a portrait reel and caption | 950px |
 | Reel/post pages: maximum height of a portrait reel | 950px |
 | Reel/post pages: total width of a landscape reel and caption | 1500px |
@@ -69,13 +69,13 @@ Sixteen, all exposed through the Stylus settings pane.
 
 On the reel and post pages nothing is sized directly. Every width setting there caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
 
-The two 9:16 reel settings bound the same thing from different directions, and whichever is tighter wins: the width setting caps the column, and the height setting caps it by the width a 9:16 video would need to reach that height. Set either low and the reel simply gets smaller, keeping its proportions.
+The two portrait-reel settings bound the same thing from different directions, and whichever is tighter wins: the width setting caps the column, and the height setting caps it by the width a 9:16 video would need to reach that height. Set either low and the reel simply gets smaller, keeping its proportions.
 
 The feed settings are more literal. The media column is set as a share of the feed width and the caption column takes what is left, and the two caps on feed media — maximum width of portrait reel, maximum height of a single photo or reel — bound the media element itself rather than a column around it.
 
 ## Known limitations
 
-- **A portrait reel that is not 9:16 is sized conservatively.** The height setting works out the column a 9:16 video would need, so a shallower portrait reel comes out under its height budget rather than filling it. Landscape reels and 9:16 reels are both exact. No capture of a portrait reel at any other shape exists, so this is reasoning from the arithmetic rather than a measurement.
+- **A portrait reel that is not 9:16 is sized conservatively.** The height setting works out the column a 9:16 video would need, so a shallower portrait reel comes out under its height budget rather than filling it — a 3:4 reel reaches roughly three quarters of the height you set. Landscape reels and 9:16 reels are both exact. It is never sized the wrong way, only short.
 - **A portrait reel shallower than 9:16 is cropped left and right in the feed.** Instagram flattens everything taller than 4:5 into one box and crops it to fill, so a 3:4 reel arrives indistinguishable from a 9:16 one and is treated as 9:16 — which costs it roughly 15% of its width at the default, and a quarter of it once the width setting is low enough to make the box a true 9:16. 3:4 reels are rare, but they are real. The trade is deliberate: giving a tall reel back its height is the same operation as taking the sides off a shorter one, and nothing on the page distinguishes them. A 9:16 reel is never side-cropped at any setting.
 - **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
 

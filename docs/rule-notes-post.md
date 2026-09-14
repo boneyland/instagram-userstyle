@@ -147,13 +147,17 @@ The overlap to know about, and it changed on 2026-09-14: a MIXED carousel whose 
 
 ## `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])`
 
-The column, and since 2026-09-11 the ONLY thing that sizes a 3:4 carousel's media. Instagram fills whatever media area the column leaves it, so the media comes out as the column width minus the caption column, exactly: measured at 785 -> 356, 950 -> 521, 1200 -> 771.
+The column, and since 2026-09-11 the ONLY thing that sizes a portrait carousel's media. Instagram fills whatever media area the column leaves it, so the media comes out as the column width minus the caption column, exactly: measured at 785 -> 356, 950 -> 521, 1200 -> 771.
 
 It needs its own setting rather than the reel page's --u-reel-width, whose 950px default leaves a 3:4 carousel narrower than intended. The 1150px default here is a picked compromise, not a derived number, and is the user's to set.
 
 A `zoom` rule used to sit below this one, driven by a `--u-post-media-scale` setting, on the belief that widening the column alone left the media at its original size. That was an artifact of the saved page, where each slide's inline `width:<n>px` is frozen. Live, Instagram re-derives it, and the zoom changed nothing at all -- see the removal record in docs/removed.md. Do not reintroduce one without a live measurement.
 
-This rule reaches 3:4 carousels ONLY — the caption rule above reaches every carousel shape. A square carousel is built with no `--x-maxWidth` on its column at all, and is capped by `max-width` instead, one rule up; a 4:3 carousel was measured on 2026-09-12 and is built the same way, so it goes there too. All three shapes are handled the same way: cap the column, let Instagram fill what is left. 3:4 remains the only shape this rule, and therefore `--u-post-width`, still reaches.
+This rule reaches PORTRAIT carousels only — the caption rule above reaches every carousel shape. A square carousel is built with no `--x-maxWidth` on its column at all, and is capped by `max-width` instead, one rule up; a 4:3 carousel was measured on 2026-09-12 and is built the same way, so it goes there too. All three shapes are handled the same way: cap the column, let Instagram fill what is left.
+
+The portrait side was 3:4 alone until 2026-09-14, when the user checked a **4:5 carousel live on the post and reel pages and reported it responding to `--u-post-width`**. That is only possible if its column carries an inline `--x-maxWidth`, since carrying the token is the whole of this rule's guard — so a 4:5 carousel sits on the token side of the boundary, the same side as 3:4, and this rule's reach is "portrait carousel" rather than one ratio. The setting was relabelled from "total width of a 3:4 carousel post and caption" to "total width of a portrait carousel and caption" the same day. No **9:16 carousel has been found anywhere**, live or captured, so "portrait" here covers 3:4 and 4:5 and stops there; the rule reads no ratio, so a taller one would be sized identically if Instagram ever served one.
+
+No snapshot of a 4:5 carousel exists — the confirmation was live, and both captured carousels on the token side are 3:4. What was not recorded is the inline value Instagram writes for a 4:5 column; 3:4 writes `min(100%,785px)`, and this rule overrides whatever is there, so nothing depends on it.
 
 
 ## `main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video))`
