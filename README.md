@@ -26,7 +26,7 @@ Chromium is not restricted, and the style was confirmed working under Stylus for
 
 Published to [userstyles.world](https://userstyles.world/style/30052/instagram-desktop-site) under the name `Instagram Desktop Site`. Install from there and Stylus will offer updates as new versions are published.
 
-To install this copy instead, open `Instagram.user.css` raw and Stylus will intercept it. Note that a manual install carries no update URL.
+To install this copy instead, open `Instagram.user.css` raw and Stylus will intercept it. Stylus takes that raw URL as the style's update URL, so an install from here follows `main` — which may be ahead of the published version — rather than userstyles.world.
 
 ## Coverage matrix — page × media shape (WIP)
 
