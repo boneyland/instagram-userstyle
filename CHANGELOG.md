@@ -1,10 +1,36 @@
 # Changelog
 
-## 2026.9.14.2
+## 2026.9.17.1
 
 Compared against `2026.9.14.1`, kept as `Instagram-20260914-uploaded.user.css`.
 
-One label, and a widening of what is known to sit behind it. Nothing renders differently and no saved setting value is affected.
+Instagram capped the post page at its 935px site width, which pinned every no-token shape there and left the width settings working downwards only; the one rule added here lifts that cap, and it is the only change that moves pixels. Two labels widen to name shapes the rules always covered but no snapshot holds -- a square reel and a 4:5 carousel, each confirmed on the live site rather than in a capture. No existing rule is changed, no setting is added or removed, and no saved value is affected.
+
+### Instagram's 935px cap on the post column, and the rule that lifts it
+
+**Reported from the live site on 2026-09-17: widening a 1:1 single photo and a 16:9 carousel did nothing.** Both reproduce offline against captures taken the same day.
+
+The post column is two nested `.xvc5jky` divs -- an outer `main > div.xvc5jky` wrapper and the inner `main > div > div.xvc5jky` that every width rule in the post block caps. The outer wrapper now carries `x1ykew4q`, and Instagram's own sheet says `.x1ykew4q{max-width:var(--polaris-site-width-wide)}`, which is 935px, its long-standing desktop content width. A `max-width` can only shrink a box, so the style's own cap could still narrow the column below 935 but could never widen it past that. That is the whole of the symptom: the settings appeared to work below 935 and to do nothing above it.
+
+Measured on the 1:1 single photo at a 1638px window, sweeping `--u-post-photo-width`, before -> after: 700 -> column 700 either way, media 319x319; 935 -> 935 either way, 554x554; 1200 -> **935/554x554** before, 1200/819x819 after; 1600 -> **935/554x554** before, 1598/1217x1217 after. The 16:9 carousel's column moves identically, 935/935/935/935 becoming 700/935/1200/1598, while its slide media reads 599x337 at every value -- that is the derived slide width SingleFile freezes at save time, not a failure, and a post-page carousel's media can only be measured live.
+
+**This is a change on Instagram's side, not a regression here.** The class splits the corpus cleanly by capture date: every snapshot taken between 2026-09-09 and 2026-09-14 contains neither `x1ykew4q` nor a `.x1ykew4q` rule at all, and every snapshot taken on 2026-09-17 carries it. When this rule was first measured that was 2 captures against 20; the folder was then re-captured through the day, and as it stands it holds 19 snapshots of which 10 carry the class -- the same split, further along. On the older markup the wrapper was unconstrained -- the square-carousel capture renders its children at 1598 with no stylesheet applied -- so `max-width: none` restores the geometry the rest of the block was measured against rather than inventing a new one.
+
+The new rule is `main > div.xvc5jky:has(> div.xvc5jky)`, in the `regexp()` post block. Keyed on the nesting rather than on `x1ykew4q`, because Instagram's atomic class names are hashes of the declaration and churn whenever the sheet is rebuilt. The `:has(> div.xvc5jky)` guard is what keeps it off the post modal: there the bare `main > div.xvc5jky` matches **1** -- the profile page's own wrapper, 1212px wide, behind the dialog -- while the guarded form matches **0**. No `!important`: Instagram's `.x1ykew4q` is (0,1,0) and this selector is (0,2,3), so specificity settles it on the element itself.
+
+`verify.py` passes, with the declaration census going 141 -> 142 for the one new line and the feed computationally identical. `scoped.py --diff` reported **2 of 22 snapshots changed** -- the two new-markup captures -- and `std = 0` on the other twenty, the modal and every older post shape included. That run was against the corpus as it stood before the day's re-captures, so it is a record rather than a figure reproducible against the folder today. Three of the current snapshots were then diffed individually: the `/p/` modal at **0 standard and 0 custom**, which is the guard holding; the square single photo at **628 standard properties over 1059 elements**; and the 16:9 carousel at **522 over 1959**. Both of the latter move `width`/`inline-size`, `height`/`block-size`, the two origins, `padding-bottom` and a few margins and insets -- geometry only, which is what lifting a `max-width` does. No `font-size`, `line-height` or `zoom` appears in any of the three.
+
+**Both of the things this rule could not be checked against offline were then checked live on 2026-09-17.** The 16:9 carousel's media, which no capture can measure for the frozen-slide-width reason above, moves with the setting on the live site. And the portrait shapes were caught by the same ceiling and are freed by this rule: they size through `--x-maxWidth` on the inner column, which the wrapper clamps exactly as it clamps a `max-width`, and every post-page shape in the coverage matrix was reported responding correctly with this rule in place. Both are confirmed by response rather than by measurement, and no portrait post has been captured since the markup changed, so nothing offline exercises that path.
+
+### `u-reel-landscape` now says "square/landscape"
+
+The label read **"Reel/post pages: total width of a landscape reel and caption"** and now reads **"Reel/post pages: total width of a square/landscape reel and caption"**.
+
+The rule behind it is untouched. `main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(video)` caps the column of any reel whose column carries **no** inline `--x-maxWidth`, and per the boundary the post block turns on, that means square **or** landscape. It reads no ratio at all; the ratio only ever entered through the label, which named the shapes that had been measured -- four reels at `56.2696%`, `69.4981%`, `75%` and `88.8614%`, with no reel at `100%` anywhere in the census.
+
+What changed is the measurement. On 2026-09-17 the user found a **square reel on the live site** and reported it responding to this setting, which retires an open question that had stood since the setting was introduced: a 1:1 reel was known by construction to take it, and the label was the honest name for every shape actually captured. It is still not captured, so nothing offline exercises the path.
+
+**The variable is still named `u-reel-landscape`.** Stylus keys a saved value by the variable name, so renaming it would silently reset every installed user's value to the 1500px default. Only the label moved. `verify.py` in two-file mode confirms all sixteen variables parse and the two versions are computationally identical.
 
 ### `u-post-width` now says "portrait carousel"
 
@@ -22,6 +48,7 @@ Still sixteen.
 
 | | |
 | --- | --- |
+| Relabelled | `u-reel-landscape` -- "total width of a landscape reel and caption" -> "total width of a square/landscape reel and caption". |
 | Relabelled | `u-post-width` -- "total width of a 3:4 carousel post and caption" -> "total width of a portrait carousel and caption". |
 
 ## 2026.9.14.1

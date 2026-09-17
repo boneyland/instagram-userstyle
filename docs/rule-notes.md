@@ -50,6 +50,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 ### The `regexp()` post and reel block — `docs/rule-notes-post.md`
 
 - `@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*")`
+- `main > div.xvc5jky:has(> div.xvc5jky)`
 - `:root:has(main div[style*="--x-maxWidth"] video)`
 - `main div[style*="--x-maxWidth"]:has(> div > div > div video)`
 - The reel stage's `min-height` (measured, NOT in the style)

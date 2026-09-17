@@ -10,7 +10,7 @@ A Stylus userstyle that rebuilds Instagram's desktop layout around the media: tw
 
 **Post pages** (`/p/<id>/` and `/<user>/p/<id>/`). Carousels are enlarged and the column widened to hold them beside a caption. Single photos get the more useful fix: Instagram lays them out two different ways depending on shape, so a tall photo comes out smaller than a carousel in the same place while a square one grows without limit. Neither is sized directly — what the settings govern is the column holding photo and caption, and the width of the caption column within it. The photo takes what is left, which is the same width whatever its shape. Landscape photos are deliberately left alone — Instagram's own layout for them is already good.
 
-**Reel pages** (`/<user>/reel/<id>/`, and reels reached through either `/p/` path). A 9:16 reel is enlarged, with its width and its height each adjustable — whichever is tighter decides the size, and the video keeps its true proportions at every value. A landscape reel is enlarged too, sharing the setting that sizes a photo post. Every post shape is reachable at a `/reel/` URL, not only reels, so all of the above applies there as well.
+**Reel pages** (`/<user>/reel/<id>/`, and reels reached through either `/p/` path). A 9:16 reel is enlarged, with its width and its height each adjustable — whichever is tighter decides the size, and the video keeps its true proportions at every value. A square or landscape reel is enlarged too, through a width setting of its own. Every post shape is reachable at a `/reel/` URL, not only reels, so all of the above applies there as well.
 
 **Text.** Size and line spacing for usernames, captions and comments, on all of the above. Both start at Instagram's own values, so nothing changes until you move a setting.
 
@@ -28,21 +28,23 @@ Published to [userstyles.world](https://userstyles.world/style/30052/instagram-d
 
 To install this copy instead, open `Instagram.user.css` raw and Stylus will intercept it. Stylus takes that raw URL as the style's update URL, so an install from here follows `main` — which may be ahead of the published version — rather than userstyles.world.
 
-## Coverage matrix — page × media shape (WIP)
+## Coverage matrix — page × media shape (New, 17 Sep 2026)
 
-| Page / modal   | URL shape    | Single photo     | Carousel       | Reel  |
-| -------------- | ------------ | ---------------- | -------------- | ------------ |
-| **Feed**           | `/`            | ✅any ratio — verified 1:1, 4:5, 3:4, 4:3, 3:2, 16:9, 9:16 (ad) | ✅ any ratio — verified 4:5, 3:4, 4:3, incl. mixed photo+video | ✅ 125% box (3:4, 9:16), 4:3, 16:9    |
-| **Post permalink**                         | `/p/<id>/`,<br>`/<user>/p/<id>/` | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3 ❓ 3:2     | ✅ 1:1, 3:4, 4:3, 4:5     | ✅ 3:4, 9:16, 16:9, 4:3, and other landscape reels |
-| **Reel permalink**                                        | `/<user>/reel/<id>/`            | ✅ 1:1, 3:4, 4:5<br>⭕ 16:9, 4:3 ❓ 3:2   | ✅ 1:1, 3:4, 4:3, 4:5  | ✅ 3:4, 9:16, 16:9, 4:3, and other landscape reels |
-| **Reels, plural path**                                    | `/reels/<id>/`                  | —                                                        | —                                                             | ❌                                            |
-| **Reel floating dialog**                                  | `/reel/<id>/`                   | —                                                        | —                                                             | ❌                                            |
-| **Post modal over profile grid**                          | `/p/<id>/`                      | ❌                                                        | ❌                                                             | ❌                                            |
-| **Post modal over feed**                                  | `/p/<id>/`                      | ❌                                                        | ❌                                                             | ❌                                            |
-| **Grid pages** (profile, explore, hashtag, saved, tagged) | various                         | — thumbnails only                                        | —                                                             | —                                            |
-| **Stories**                                               | `/stories/...`                  | —                                                        | —                                                             | —                                            |
+| Page / modal                                              | URL shape                                               | Single photo                       | Carousel                        | Reel                                        |
+| --------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------- | ------------------------------- | ------------------------------------------- |
+| **Feed**                                                  | `/`                                                     | ✅any ratio                         | ✅ any ratio                     | ✅ 125% box (4:5, 3:4, 9:16), 4:3, 16:9, 1:1 |
+| **Post / reel permalink**                                 | `/p/<id>/`<br>`/<user>/p/<id>/`<br>`/<user>/reel/<id>/` | ✅1:1, 3:4, 4:5 <br>⭕4:3, 16:9, 3:2 | ✅ 1:1, 16:9, 4:5, 3:4, 4:3, 3:2 | ✅1:1, 9:16, 4:5, 4:3, 16:9, 3:2, 3:4     |
+| **Reels, plural path**                                    | `/reels/<id>/`                                          | —                                  | —                               | ❌                                           |
+| **Reel floating dialog**                                  | `/reel/<id>/`                                           | —                                  | —                               | ❌                                           |
+| **Post modal over profile grid**                          | `/p/<id>/`                                              | ❌                                  | ❌                               | ❌                                           |
+| **Post modal over feed**                                  | `/p/<id>/`                                              | ❌                                  | ❌                               | ❌                                           |
+| **Grid pages** (profile, explore, hashtag, saved, tagged) | various                                                 | — thumbnails only                  | —                               | —                                           |
+| **Stories**                                               | `/stories/...`                                          | —                                  | —                               | —                                           |
 
-✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ caption column widened, media left at Instagram's own width  ·  — shape cannot reach that URL  ·  ❓  Not verified
+✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ caption column widened; no setting controls the media width, it takes what the caption leaves  ·  — shape cannot reach that URL
+
+More about ⭕:
+They get everything else the style does: the width ceiling Instagram puts on the post column is lifted, so the media grows with the window, and the caption column, font size and line spacing settings all apply. They have no width cap of their own because they do not need one — a landscape photo already sits comfortably within the viewport, and capping it would only make it smaller.
 
 ## Settings
 
@@ -64,7 +66,7 @@ Sixteen, all exposed through the Stylus settings pane.
 | Reel/post pages: total width of a portrait carousel and caption | 1350px |
 | Reel/post pages: total width of a portrait reel and caption | 950px |
 | Reel/post pages: maximum height of a portrait reel | 950px |
-| Reel/post pages: total width of a landscape reel and caption | 1500px |
+| Reel/post pages: total width of a square/landscape reel and caption | 1500px |
 | Reel/post pages: width of the caption column | 380px |
 
 On the reel and post pages nothing is sized directly. Every width setting there caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.

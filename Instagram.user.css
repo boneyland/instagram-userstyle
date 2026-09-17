@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.14.2
+@version        2026.9.17.1
 @namespace      userstyles.world/user/boneyland
 @description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable.
 @author         boneyland
@@ -12,21 +12,21 @@
 	"hidden:Hidden*": "none",
 	"shown:Shown":    "block"
 }
-@var range  u-feed-width         "Feed: feed width, as a % of the window"                           [90, 30, 100, 1]
-@var range  u-feed-min           "Feed: minimum feed width in pixels"                               [780, 400, 1600, 10, "px"]
-@var range  u-media-column       "Feed: media width, as a % of feed width"                          [55, 20, 100, 1]
-@var range  u-caption-min        "Feed: minimum width of caption column before it moves underneath" [320, 150, 800, 10, "px"]
-@var range  u-media-max-height   "Feed: maximum height of a single photo or reel"                   [900, 300, 2000, 50, "px"]
-@var range  u-feed-reel-width    "Feed: maximum width of portrait reel"                             [550, 300, 2000, 10, "px"]
-@var range  u-carousel-scale-max "Feed: scale carousels by a maximum of (1 = off)"                  [1.5, 1, 6, 0.1]
-@var range  u-text-size          "Text: font size of usernames, captions and comments"              [14, 10, 24, 1, "px"]
-@var range  u-text-line-height   "Text: spacing between lines of that text"                         [18, 12, 36, 1, "px"]
-@var range  u-post-photo-width   "Reel/post pages: total width of photo/carousel and caption"       [1350, 400, 2000, 10, "px"]
-@var range  u-post-width         "Reel/post pages: total width of a portrait carousel and caption"  [1350, 400, 2000, 10, "px"]
-@var range  u-reel-width         "Reel/post pages: total width of a portrait reel and caption"      [950, 400, 2000, 10, "px"]
-@var range  u-reel-height        "Reel/post pages: maximum height of a portrait reel"               [950, 400, 2000, 10, "px"]
-@var range  u-reel-landscape     "Reel/post pages: total width of a landscape reel and caption"     [1500, 400, 2000, 10, "px"]
-@var range  u-reel-media-info    "Reel/post pages: width of the caption column"                     [380, 200, 800, 1, "px"]
+@var range  u-feed-width         "Feed: feed width, as a % of the window"                               [90, 30, 100, 1]
+@var range  u-feed-min           "Feed: minimum feed width in pixels"                                   [780, 400, 1600, 10, "px"]
+@var range  u-media-column       "Feed: media width, as a % of feed width"                              [55, 20, 100, 1]
+@var range  u-caption-min        "Feed: minimum width of caption column before it moves underneath"     [320, 150, 800, 10, "px"]
+@var range  u-media-max-height   "Feed: maximum height of a single photo or reel"                       [900, 300, 2000, 50, "px"]
+@var range  u-feed-reel-width    "Feed: maximum width of portrait reel"                                 [550, 300, 2000, 10, "px"]
+@var range  u-carousel-scale-max "Feed: scale carousels by a maximum of (1 = off)"                      [1.5, 1, 6, 0.1]
+@var range  u-text-size          "Text: font size of usernames, captions and comments"                  [14, 10, 24, 1, "px"]
+@var range  u-text-line-height   "Text: spacing between lines of that text"                             [18, 12, 36, 1, "px"]
+@var range  u-post-photo-width   "Reel/post pages: total width of photo/carousel and caption"           [1350, 400, 2000, 10, "px"]
+@var range  u-post-width         "Reel/post pages: total width of a portrait carousel and caption"      [1350, 400, 2000, 10, "px"]
+@var range  u-reel-width         "Reel/post pages: total width of a portrait reel and caption"          [950, 400, 2000, 10, "px"]
+@var range  u-reel-height        "Reel/post pages: maximum height of a portrait reel"                   [950, 400, 2000, 10, "px"]
+@var range  u-reel-landscape     "Reel/post pages: total width of a square/landscape reel and caption"  [1500, 400, 2000, 10, "px"]
+@var range  u-reel-media-info    "Reel/post pages: width of the caption column"                         [380, 200, 800, 1, "px"]
 ==/UserStyle== */
 
 @-moz-document domain("www.instagram.com") {
@@ -229,6 +229,10 @@
 }
 
 @-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*") {
+
+	main > div.xvc5jky:has(> div.xvc5jky) {
+		max-width: none;
+	}
 
 	:root:has(main div[style*="--x-maxWidth"] video) {
 		--media-info: var(--u-reel-media-info) !important;
