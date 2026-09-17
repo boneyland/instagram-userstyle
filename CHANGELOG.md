@@ -4,7 +4,7 @@
 
 Compared against `2026.9.14.1`, kept as `Instagram-20260914-uploaded.user.css`.
 
-Instagram capped the post page at its 935px site width, which pinned every no-token shape there and left the width settings working downwards only; the one rule added here lifts that cap, and it is the only change that moves pixels. Two labels widen to name shapes the rules always covered but no snapshot holds -- a square reel and a 4:5 carousel, each confirmed on the live site rather than in a capture. No existing rule is changed, no setting is added or removed, and no saved value is affected.
+Instagram capped the post page at its 935px site width, which pinned every no-token shape there and left the width settings working downwards only; the one rule added here lifts that cap, and it is the only change that moves pixels. Two labels widen to name shapes the rules always covered but no snapshot holds -- a square reel and a 4:5 carousel, each confirmed on the live site rather than in a capture. Three defaults were also retuned by eye. No existing rule is changed and no setting is added or removed, and no saved value is affected -- a default is only what a fresh install starts from.
 
 ### Instagram's 935px cap on the post column, and the rule that lifts it
 
@@ -42,6 +42,20 @@ What changed is the measurement. Both captured carousels on the token side are 3
 
 "Portrait" stops there rather than running to 9:16: **no 9:16 carousel has been found anywhere**, live or captured, so the name covers two confirmed ratios rather than a range checked end to end. The rule would size a taller one identically if Instagram ever served one, since it reads no ratio. `docs/open-questions.md` carries both that gap and the fact that the 4:5 case was confirmed by response rather than by numbers -- no snapshot of one exists, and the inline value Instagram writes for a 4:5 column was not read.
 
+### Three defaults retuned
+
+Picked by eye on the live site, which is what every default here is: a compromise, not a derived number, and the user's to set.
+
+| Setting | Was | Now |
+| --- | --- | --- |
+| `u-feed-reel-width` -- feed portrait reel width | 550px | **600px** |
+| `u-post-width` -- portrait carousel column | 1350px | **1100px** |
+| `u-reel-height` -- portrait reel height | 950px | **1000px** |
+
+`u-reel-height` is the one with a knock-on worth recording, because the reel column takes `min(100%, var(--u-reel-width), calc(var(--u-reel-height) * 9 / 16 + var(--u-reel-media-info)))` and moving the height moves which term binds. At the old 950/950 the height term gave `950 * 9/16 + 380` = 914 and bound first, which the measured sweep confirmed to the pixel. At 950/1000 it gives **942.5**, so the height term still binds, the column is about 942 rather than the 950 the width setting reads, and the media box comes out about 562x1000 -- the box height landing on the height setting exactly, which is what the arithmetic is for. That is computed from the formula and consistent with the sweep recorded in `docs/rule-notes-post.md`; it was not re-measured. The consequence already noted there gets slightly sharper: with the `95vh` term gone, a 1000px box on a 900px-tall window scrolls.
+
+No saved value moves. Stylus keys a value by variable name, so an existing install keeps whatever it had and sees nothing change; only a fresh install starts from the new numbers.
+
 ### Settings
 
 Still sixteen.
@@ -50,6 +64,9 @@ Still sixteen.
 | --- | --- |
 | Relabelled | `u-reel-landscape` -- "total width of a landscape reel and caption" -> "total width of a square/landscape reel and caption". |
 | Relabelled | `u-post-width` -- "total width of a 3:4 carousel post and caption" -> "total width of a portrait carousel and caption". |
+| Default moved | `u-feed-reel-width` 550px -> 600px. |
+| Default moved | `u-post-width` 1350px -> 1100px. |
+| Default moved | `u-reel-height` 950px -> 1000px. |
 
 ## 2026.9.14.1
 

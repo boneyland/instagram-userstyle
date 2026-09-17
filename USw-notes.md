@@ -21,7 +21,8 @@ Chromium-based browsers are not restricted, and the style was confirmed working 
 
 Since `2026.9.14.1`, the version published here before this one. [The full changelog, with the reasoning behind each change, is on GitHub.](https://github.com/boneyland/instagram-userstyle/blob/main/CHANGELOG.md)
 
-One fix and two labels. No setting is added or removed, and your saved values carry over untouched.
+One fix, two labels and three new starting values. No setting is added or removed, and your saved values carry over untouched.
 
 - **The post and reel page width settings work at every value again.** Instagram started capping the post column at its own 935px content width, so widening a photo, carousel or reel past that point did nothing — the settings appeared to work up to a point and then stop. That ceiling is lifted, and the media grows with the window again. The "More posts from" grid below the post widens with it, the way it did before Instagram's change.
 - **Two labels now name every shape they reach.** "Total width of a landscape reel and caption" reads **square/landscape reel**, and "total width of a 3:4 carousel post and caption" reads **portrait carousel**. The rules behind them always covered those shapes; only the labels were behind.
+- **Three settings start from new values**, picked by eye: a portrait reel in the feed starts 600px wide rather than 550, a portrait carousel's column on the post pages 1100px rather than 1350, and a portrait reel's maximum height 1000px rather than 950. **If you already have the style installed, nothing moves** -- your own values are kept, and these are only what a fresh install starts from. Every default here is a compromise rather than a right answer, so treat them as a starting point as always.

@@ -7,8 +7,8 @@ A userstyle for the desktop web at `www.instagram.com`, published to [userstyles
 | File | Role |
 | --- | --- |
 | `Instagram.user.css` | The style. This is the deliverable. |
-| `Instagram-20260914-uploaded.user.css` | The currently published version, `2026.9.14.1`, confirmed live on 2026-09-14. Diff the deliverable against this one, and write each new `CHANGELOG.md` entry and the whole of `USw-notes.md` as a comparison with it — **do not edit**. |
-| `Instagram-20260912.4-uploaded.user.css`, `Instagram-20260912.1-uploaded.user.css`, `Instagram-20260910-uploaded.user.css`, `Instagram-20260907-uploaded.user.css` | Previously published versions. Kept for history — **do not edit**. |
+| `Instagram-20260917-uploaded.user.css` | The currently published version, `2026.9.17.1`, confirmed live on 2026-09-17 — including the three retuned defaults, which were uploaded after the first `2026.9.17.1` went up. Diff the deliverable against this one, and write each new `CHANGELOG.md` entry and the whole of `USw-notes.md` as a comparison with it — **do not edit**. |
+| `Instagram-20260914-uploaded.user.css`, `Instagram-20260912.4-uploaded.user.css`, `Instagram-20260912.1-uploaded.user.css`, `Instagram-20260910-uploaded.user.css`, `Instagram-20260907-uploaded.user.css` | Previously published versions. Kept for history — **do not edit**. |
 | `CHANGELOG.md` | Release notes per `@version`, current releases only — `2026.9.12.1` and later. The style file itself carries no changelog. |
 | `docs/changelog-archive.md` | Releases before `2026.9.12.1`, verbatim. Not edited; look here for the history of an older entry. |
 | `docs/removed.md` | **Why something is not in the style**, organized by subject rather than by release: every deletion and every deliberate omission, with the evidence. Read the entry before re-adding a rule of the same shape. |
