@@ -32,7 +32,7 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 
 | Page / modal                                              | URL shape                                               | Single photo                       | Carousel                        | Reel                                        |
 | --------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------- | ------------------------------- | ------------------------------------------- |
-| **Feed**                                                  | `/`                                                     | ✅any ratio                         | ✅ any ratio                     | ✅ 125% box (4:5, 3:4, 9:16), 4:3, 16:9, 1:1 |
+| **Feed**                                                  | `/`                                                     | ✅any ratio                         | ✅ any ratio                     | ✅ 125% box (4:5, 3:4, 9:16), 4:3, 16:9, 1:1, 3:2 |
 | **Post / reel permalink**                                 | `/p/<id>/`<br>`/<user>/p/<id>/`<br>`/<user>/reel/<id>/` | ✅1:1, 3:4, 4:5 <br>⭕4:3, 16:9, 3:2 | ✅ 1:1, 16:9, 4:5, 3:4, 4:3, 3:2 | ✅1:1, 9:16, 4:5, 4:3, 16:9, 3:2, 3:4     |
 | **Reels, plural path**                                    | `/reels/<id>/`                                          | —                                  | —                               | ❌                                           |
 | **Reel floating dialog**                                  | `/reel/<id>/`                                           | —                                  | —                               | ❌                                           |
