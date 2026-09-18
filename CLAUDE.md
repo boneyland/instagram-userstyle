@@ -1,6 +1,6 @@
 # Instagram Desktop site — UserCSS
 
-A userstyle for the desktop web at `www.instagram.com`, published to [userstyles.world](https://userstyles.world/style/30052/instagram-desktop-site) under the user `boneyland` — **that page is the authority on which version is live.** Stylus is required; the browser is not restricted to Firefox. Despite being built on `@-moz-document`, the style was confirmed working under Stylus for Chromium on 2026-09-10 (ungoogled-chromium). The mechanism has not been verified here — presumably Stylus does the `@-moz-document` URL matching itself rather than handing the at-rule to the engine, but treat that as inference. Under git since 2026-09-11, with the remote intended to be public. `Instagram_snapshots/` and `Preview_1246.png` are deliberately **untracked** — both capture a logged-in session — so a fresh clone cannot run either verification script until snapshots are captured locally. `.gitignore` gives the reason for every exclusion.
+A userstyle for the desktop web at `www.instagram.com`, published to [userstyles.world](https://userstyles.world/style/30052/instagram-desktop-site) under the user `boneyland` — **that page is the authority on which version is live.** Stylus is required; the browser is not restricted to Firefox. Despite being built on `@-moz-document`, the style was confirmed working under Stylus for Chromium on 2026-09-10 (ungoogled-chromium). The mechanism has not been verified here — presumably Stylus does the `@-moz-document` URL matching itself rather than handing the at-rule to the engine, but treat that as inference. Under git since 2026-09-11, with the remote intended to be public. `Instagram_snapshots/` is deliberately **untracked** — it captures a logged-in session — so a fresh clone cannot run either verification script until snapshots are captured locally. `.claude/` was added to `.gitignore` on 2026-09-18 and the `shipping-a-release` skill went untracked with it, so the release checklist is local to this machine and absent from a clone; the last tracked copy is `git show e88eb2e^:.claude/skills/shipping-a-release/SKILL.md`. `.gitignore` gives the reason for every exclusion.
 
 ## Files
 
@@ -20,7 +20,7 @@ A userstyle for the desktop web at `www.instagram.com`, published to [userstyles
 | `docs/rule-notes-post.md` | The notes for the `regexp()` block — every post shape on `/p/`, `/<user>/p/` and `/<user>/reel/`. |
 | `docs/open-questions.md` | Residual uncertainty, not pending work: the shapes that are untested or covered only by construction. The prohibitions these carry are duplicated into the Hard rules below. |
 | `docs/snapshots.md` | Every SingleFile capture and what it is evidence for. Read it to pick the snapshot that exercises a rule. |
-| `.claude/skills/shipping-a-release/` | The release checklist for userstyles.world. |
+| `.claude/skills/shipping-a-release/` | The release checklist for userstyles.world. **Untracked since 2026-09-18** — local to this machine only. Nothing else in the repository carries the Stylus version comparator, the `@updateURL` trap or the record that mirroring is deliberately unused, so read it before shipping and recover it from history if it is missing. |
 | `verify.py` | Verification harness (see below). Run before shipping. |
 | `scoped.py` | The `@-moz-document` half of verification, which `verify.py` is blind to. See below. |
 | `unwrap.py` | Joins hard-wrapped Markdown paragraphs into one line each, leaving fenced blocks, tables and headings verbatim. Checks that the result is equivalent — same text with all whitespace removed, same block structure — and refuses to write if it is not. `unwrap.py FILE` to check, `--write` to apply. |
@@ -169,7 +169,7 @@ The Playwright MCP browser cannot open `file://` URLs or reach localhost from th
 
 Publishing is manual — uploaded, typed or pasted directly into the USw website. No hosted source and no mirroring: the git repository is for history, not distribution, and userstyles.world is fed by hand from the deliverable.
 
-Use the `shipping-a-release` skill (`.claude/skills/shipping-a-release/`) for the pre-flight checks, the `@version` bump, the two notes files and the `@updateURL` trap.
+Use the `shipping-a-release` skill (`.claude/skills/shipping-a-release/`, untracked — see the Files table) for the pre-flight checks, the `@version` bump, the two notes files and the `@updateURL` trap.
 
 **`@version` is CalVer plus a revision that starts at `.1`**: `YYYY.M.D.1`, then `.2` for a second release the same day, starting over at `.1` on a new day. Never write a bare `YYYY.M.D` and never write `.0` — Stylus compares a missing part as 0, so `2026.9.10` and `2026.9.10.0` compare *equal* to each other and no update is offered. Releases published before this scheme keep their plain `YYYY.M.D` and are not renamed. The skill has the comparator it was read from.
 

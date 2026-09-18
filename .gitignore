@@ -7,5 +7,7 @@ __pycache__/
 # cannot run either script until snapshots are captured.
 Instagram_snapshots/
 
-# Claude folder
+# Claude Code's local configuration and skills.
+# Machine-specific, so a clone does not get the shipping-a-release checklist;
+# CLAUDE.md records that it lives here and points at the last tracked copy.
 .claude/
