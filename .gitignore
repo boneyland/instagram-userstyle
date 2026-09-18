@@ -7,38 +7,5 @@ __pycache__/
 # cannot run either script until snapshots are captured.
 Instagram_snapshots/
 
-# Empty placeholder files created by Claude Code's Bash sandbox.
-# The sandbox denies writes to config paths that would otherwise be loaded and executed automatically,
-# and enforces that with read-only bind mounts. A bind mount needs its target to exist,
-# so every denied path that is missing gets created as an empty 0-byte file and is left behind
-# when the sandbox exits. None of these belong to the project.
-/.bash_profile
-/.bashrc
-/.gitconfig
-/.idea
-/.mcp.json
-/.profile
-/.ripgreprc
-/.zprofile
-/.zshrc
-
-# Also a sandbox placeholder. There are no submodules here; if one is ever added, git needs
-# this file tracked, so remove the line and the empty file.
-/.gitmodules
-
-# Sandbox placeholders inside .claude/
-# If you ever write a genuine settings.json or hook here, drop its line from this list first.
-/.claude/agents
-/.claude/commands
-/.claude/hooks
-/.claude/launch.json
-/.claude/loop.md
-/.claude/output-styles
-/.claude/routines
-/.claude/scheduled_tasks.json
-/.claude/settings.json
-/.claude/workflows
-/.claude/.cc-writes/
-
-# Local, machine-specific Claude Code settings
-/.claude/settings.local.json
+# Claude folder
+.claude/
