@@ -261,6 +261,16 @@
 		font-weight: 600;
 		pointer-events: none;
 	}
+
+	@media screen and (min-width: 800px) {
+
+		div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])::after {
+			top: 12px;
+			bottom: auto;
+			right: calc(100% + 50% * var(--u-media-column) / max(1, 100 - var(--u-media-column)));
+			transform: translateX(50%);
+		}
+	}
 }
 
 @-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*") {

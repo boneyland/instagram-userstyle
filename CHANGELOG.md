@@ -30,9 +30,11 @@ It is built from CSS counters over the dots Instagram already puts in the DOM, o
 
 The two page types use different dot widgets and so need separate rules: the feed marks the active dot with `aria-current="step"` on a `<button>`, post pages with a class. Dots are matched structurally rather than by `aria-label`, which is prose and would have made the feature work only in English.
 
-Placement differs for the same reason. On a post page the dot strip's parent is the media box itself, so the badge sits inside it, bottom-right. On the feed the nearest positioned ancestor is the region below the media, so the badge is lifted to 12px above the media's bottom edge. Both read as the same position.
+Placement differs for the same reason, and on the feed it differs again with the window. On a post page the dot strip's parent is the media box itself, so the badge sits inside it, bottom-right. On the feed below 800px, where Instagram's own single column applies, it sits just above the media's bottom edge. At 800px and up this style moves the dot strip into the caption column, so the badge is re-anchored across to the media and centred near its top -- measured exactly on the media's centre line at media-column widths of 20, 35, 55 and 70. A first attempt shipped without that second rule and put the badge in the top-right corner of the post; it was caught on the live site the same day.
 
 A carousel opened as a modal uses the post-page widget, so the post block already covers it -- confirmed against two captures taken on 2026-09-21, rendering `1/5` inside the modal.
+
+One placement gap remains: if the window is narrow enough that the caption column wraps below the media while still being 800px or wider, the feed badge is misplaced. CSS cannot ask whether a flex line wrapped, so no single rule covers both states.
 
 Untested: carousels with more than 16 slides. Dot count equalled slide count at 3, 5, 6, 7, 9, 10, 11 and 16 across every capture and both live checks, but if Instagram ever drops dots on a very long carousel rather than shrinking them, the total would read low with nothing to signal it.
 
