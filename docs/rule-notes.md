@@ -46,6 +46,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 - Media (section header)
 - `article:not([role="dialog"] *) img[aria-hidden="true"]`
 - `article:not([role="dialog"] *) a:has(div[style*="padding-bottom"])`
+- the slide counter — `div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])` and its three companions
 
 ### The `regexp()` post and reel block — `docs/rule-notes-post.md`
 
@@ -62,6 +63,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 - `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])`
 - `main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video))`
 - `main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)):has(div[style*="padding-bottom:1"] > img, div[style*="padding-bottom: 1"] > img)`
+- the slide counter — `div:has(> div > ._acnb)` and its three companions
 
 ---
 

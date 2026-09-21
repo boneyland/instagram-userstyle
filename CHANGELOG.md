@@ -1,5 +1,41 @@
 # Changelog
 
+## 2026.9.21.1
+
+Compared against `2026.9.17.1`, kept as `Instagram-20260917-uploaded.user.css`.
+
+Two changes: a fix for feed carousels going blank after viewing stories, and a new optional slide counter on carousels. The fix is one declaration and is on by default because it repairs a defect this style introduced; the counter is eight rules behind a setting that starts hidden, so a fresh install sees no change from it at all.
+
+### Feed carousels went blank after viewing stories, and did not recover
+
+**Reported from the live site on 2026-09-21: after opening a story from the feed and coming back, carousels rendered as empty boxes.** They never recovered on their own -- only scrolling them out of view and back, which forces a fresh mount, restored them -- and disabling the style stopped it happening.
+
+The cause was this style's own rule. `main div[style*="min(470px"]:not(li *):not(:has(ul))` sets `width: 100% !important` on the media wrapper, and that percentage resolves against a parent which is a shrink-to-fit flex item. While the slide list is mounted the `:not(:has(ul))` guard holds the rule off a carousel entirely. Unmounted, the guard stops applying, the percentage becomes circular, and both parent and wrapper resolve to **zero** -- taking the whole subtree with them. Feed virtualization unmounts that list when you navigate away to stories, which is why the story round trip is what triggers it. It is the same failure the `:not(li *)` guard was already written against, one level further up.
+
+Measured live in the blank state: the wrapper carries its inline `width: calc(-2px + min(470px, 100vw))`, so 468px, and computes `0px`, with the media column at `775x2` and no image, video or slide list inside it. Reproduced offline by deleting the `<ul>` from a saved carousel, which collapses the column to `769x2` with the wrapper at `0px`.
+
+The fix is one declaration on that same rule: `min-width: min(468px, var(--u-media-px))`. It floors the wrapper so the percentage can never resolve to zero, and it is built from `--u-media-px` rather than a flat 468px so it can never exceed the column it sits in -- 468px at the default settings, about 270px at the minimum media column, 68px at the minimum feed width. Photos are identical mounted and unmounted at both column widths, and a mounted carousel is untouched at 468px.
+
+An earlier candidate removed the flip instead, applying `width: 100%` in both states. It is recorded in `docs/removed.md` as strictly worse: every carousel then collapses the moment it loads, with no recovery at all.
+
+The saved feed already contained an unmounted post with a collapsed column, so the fix repairs that capture too: `Instagram_feed3.html` grows 270px in height, one article going `1399x455` to `1399x725`.
+
+### A slide counter on carousels
+
+New setting, **Carousels: a slide counter (3/7) over the media**, hidden by default. Shown, it puts a small pill on a carousel reading the current slide and the total -- on the feed, on post and reel pages, and on a post opened as a modal.
+
+It is built from CSS counters over the dots Instagram already puts in the DOM, one per slide, so nothing has to track which slide is showing. One counter runs over every dot; a second stops at the active one, because the rule for dots that follow the active dot leaves it out of their increment. Both numbers are then readable at a single element, which is what makes it one pill rather than two pieces.
+
+**The dots are not touched**: no size, `overflow` or `transform` change, so they stay clickable, and the long-carousel dot strip keeps its own clipping. `counter-increment` has no layout effect, so with the setting hidden the style adds nothing to the page but two inert properties -- verified across all twenty-one snapshots, where the only differences the counter contributes are `counter-reset` and `counter-increment` and no geometry moves anywhere.
+
+The two page types use different dot widgets and so need separate rules: the feed marks the active dot with `aria-current="step"` on a `<button>`, post pages with a class. Dots are matched structurally rather than by `aria-label`, which is prose and would have made the feature work only in English.
+
+Placement differs for the same reason. On a post page the dot strip's parent is the media box itself, so the badge sits inside it, bottom-right. On the feed the nearest positioned ancestor is the region below the media, so the badge is lifted to 12px above the media's bottom edge. Both read as the same position.
+
+A carousel opened as a modal uses the post-page widget, so the post block already covers it -- confirmed against two captures taken on 2026-09-21, rendering `1/5` inside the modal.
+
+Untested: carousels with more than 16 slides. Dot count equalled slide count at 3, 5, 6, 7, 9, 10, 11 and 16 across every capture and both live checks, but if Instagram ever drops dots on a very long carousel rather than shrinking them, the total would read low with nothing to signal it.
+
 ## 2026.9.17.1
 
 Compared against `2026.9.14.1`, kept as `Instagram-20260914-uploaded.user.css`.

@@ -9,7 +9,7 @@ Rebuilds Instagram's desktop layout around the media instead of a fixed 470px co
 - **Reel pages.** Reels are enlarged and the caption column widened. A portrait reel has both its width and its height adjustable — whichever you set tighter decides the size, and the video keeps its true proportions at every value. A square or landscape reel has a width setting of its own. All of it applies to reels reached through a post URL, and to any post opened at a `/reel/` URL.
 - **Text.** Size and line spacing of usernames, captions and comments, everywhere above. Both start at Instagram's own values, so nothing changes until you move a setting.
 
-Sixteen settings in all, adjustable from the Stylus settings pane. [The table of defaults is in the README.](https://github.com/boneyland/instagram-userstyle#settings)
+Seventeen settings in all, adjustable from the Stylus settings pane. [The table of defaults is in the README.](https://github.com/boneyland/instagram-userstyle#settings)
 
 ## Requirements
 
@@ -19,10 +19,11 @@ Chromium-based browsers are not restricted, and the style was confirmed working 
 
 ## What's new
 
-Since `2026.9.14.1`, the version published here before this one. [The full changelog, with the reasoning behind each change, is on GitHub.](https://github.com/boneyland/instagram-userstyle/blob/main/CHANGELOG.md)
+Since `2026.9.17.1`, the version published here before this one. [The full changelog, with the reasoning behind each change, is on GitHub.](https://github.com/boneyland/instagram-userstyle/blob/main/CHANGELOG.md)
 
-One fix, two labels and three new starting values. No setting is added or removed, and your saved values carry over untouched.
+One fix and one new setting. Your saved values carry over untouched, and the new setting starts switched off.
 
-- **The post and reel page width settings work at every value again.** Instagram started capping the post column at its own 935px content width, so widening a photo, carousel or reel past that point did nothing — the settings appeared to work up to a point and then stop. That ceiling is lifted, and the media grows with the window again. The "More posts from" grid below the post widens with it, the way it did before Instagram's change.
-- **Two labels now name every shape they reach.** "Total width of a landscape reel and caption" reads **square/landscape reel**, and "total width of a 3:4 carousel post and caption" reads **portrait carousel**. The rules behind them always covered those shapes; only the labels were behind.
-- **Three settings start from new values**, picked by eye: a portrait reel in the feed starts 600px wide rather than 550, a portrait carousel's column on the post pages 1100px rather than 1350, and a portrait reel's maximum height 1000px rather than 950. **If you already have the style installed, nothing moves** -- your own values are kept, and these are only what a fresh install starts from. Every default here is a compromise rather than a right answer, so treat them as a starting point as always.
+- **Feed carousels no longer go blank after you view a story.** Coming back to the feed from a story left carousels as empty boxes that never filled in again unless you scrolled them away and back. That was this style's doing: the rule that widens the media measured itself against a parent that had nothing to size it while Instagram had the slides unloaded, and the pair collapsed to nothing. It now has a floor it cannot fall below. Nothing else about the layout changes.
+- **A carousel can show which slide you are on.** A new setting, **Carousels: a slide counter (3/7) over the media**, puts a small pill on carousels with the current slide and the total — in the feed, on post and reel pages, and on a post opened in a lightbox. It starts **hidden**, so switch it on if you want it. The dots stay exactly where they are and stay clickable; the counter sits above them on the feed and in the bottom corner of the media on a post page.
+
+Not covered: carousels with more than 16 slides have not been checked. If you find one where the total reads low, that is why.

@@ -219,3 +219,20 @@ Matching one digit rather than a whole percentage is the rule the top of this fi
 Measured across the twenty-one snapshots present when the census was taken: 1 on each of the three square and portrait post pages, 0 on the three landscape ones, 0 everywhere else. With the cap at 1100, its default then and **1350 since 2026-09-12**: landscape 1168x659 in an uncapped 1598px column, square 670x670, 3:4 670x893 -- so the two shapes that were inconsistent with each other still come out identical in width, and landscape keeps Instagram's. That identity is what the rule is for and does not depend on the value; the pixel figures do.
 
 Failure mode is the safe direction, the same as .xvc5jky's: if the guard stops matching, a square photo returns to Instagram's stock layout rather than breaking.
+
+
+## The slide counter — `div:has(> div > ._acnb)` and its three companions
+
+The post-page half of the carousel slide counter, added 2026-09-21. The counter mechanism is identical to the feed's and is explained once, in `docs/rule-notes-feed.md`; only what differs is recorded here.
+
+The widget is a different one. Post pages mark dots with classes -- `._acnb` for a dot, `._acnf` for the active one -- where the feed uses `<button>` and `aria-current="step"`. Nothing is shared between the two selectors, which is why the two halves cannot collide even on a page that carries both.
+
+The host is one level up, not four. A post page's dot strip is `position: absolute` and its parent IS the media box, already `position: relative` -- measured at 1250x1250, 719x959 and 1110x1110 on three different captures. So `:has(> div > ._acnb)` reaches it directly and the badge sits INSIDE the media at `bottom: 12px; right: 12px`, mobile-style, rather than being lifted above the host as it is on the feed. The feed cannot do this: its strip's only positioned ancestor is the region BELOW the media, so reaching the media's own box would mean changing which of Instagram's elements is positioned.
+
+**This rule is what covers a carousel opened as a modal, and that is now measured rather than assumed.** Two captures taken on 2026-09-21 settle it: `Instagram_post_modal_over_feed.html` and `Instagram_post_modal_over_profile.html`, both at `https://www.instagram.com/p/DdhFSVGDjfR/`. A modal carousel uses the POST widget -- `._acnb`/`._acnf`, inside `[role="dialog"]` -- so this block's `regexp()` already owns it, since opening a post as a modal changes the URL to `/p/<id>/`. Rendered proof: `1/5` in the modal, bottom-right inside the media.
+
+`Instagram_post_modal_over_feed.html` is the capture that proves the two halves stay apart. It holds the modal's post-widget carousel AND the four feed carousels still mounted behind it. Both blocks apply at that URL, and the two selectors match **disjoint** sets: 4 feed hosts behind, 1 post host in the modal, no element in both.
+
+Match counts across the twenty-one snapshots: 1 on each of the three post-page carousels, 1 on each of the two post modals, and 0 everywhere else -- including every reel, every single photo, and the single-photo modal, which has no dots at all.
+
+NO DIALOG GUARD, DELIBERATELY. Every other rule shaped like this carries `:not([role="dialog"] *)`; this one must not, because the modal is exactly where it is wanted. The hard rule in `CLAUDE.md` exists because feed rules landing on a modal resize a layout they were never measured against. This rule changes no geometry at all -- it adds counters and one `::after` -- so the hazard the guard protects against does not arise.

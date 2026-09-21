@@ -43,15 +43,15 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 
 ✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ caption column widened; no setting controls the media width, it takes what the caption leaves  ·  — shape cannot reach that URL
 
-More about ⭕:
-They get everything else the style does: the width ceiling Instagram puts on the post column is lifted, so the media grows with the window, and the caption column, font size and line spacing settings all apply. They have no width cap of their own because they do not need one — a landscape photo already sits comfortably within the viewport, and capping it would only make it smaller.
+More about ⭕: They get everything else the style does: the width ceiling Instagram puts on the post column is lifted, so the media grows with the window, and the caption column, font size and line spacing settings all apply. They have no width cap of their own because they do not need one — a landscape photo already sits comfortably within the viewport, and capping it would only make it smaller.
 
 ## Settings
 
-Sixteen, all exposed through the Stylus settings pane.
+Seventeen, all exposed through the Stylus settings pane.
 
 | Setting | Default |
 | --- | --- |
+| Carousels: a slide counter (3/7) over the media | Hidden |
 | Feed: the right-hand sidebar (your profile, the account switcher, suggestions) | Hidden |
 | Feed: feed width, as a % of the window | 90% |
 | Feed: minimum feed width in pixels | 780px |

@@ -2,13 +2,17 @@
 @name           Instagram Desktop Site
 @version        2026.9.21.1
 @namespace      userstyles.world/user/boneyland
-@description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable.
+@description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
 @author         boneyland
 @homepageURL    https://github.com/boneyland/instagram-userstyle
 @license        MIT
 @preprocessor   default
 
 @var select u-feed-sidebar       "Feed: the right-hand sidebar (your profile, the account switcher, suggestions)" {
+	"hidden:Hidden*": "none",
+	"shown:Shown":    "block"
+}
+@var select u-slide-counter      "Carousels: a slide counter (3/7) over the media" {
 	"hidden:Hidden*": "none",
 	"shown:Shown":    "block"
 }
@@ -227,6 +231,36 @@
 		object-fit: contain !important;
 		margin: 0 auto;
 	}
+
+	div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"]) {
+		counter-reset: u-slide u-cur;
+		position: relative;
+	}
+
+	div:not([role="dialog"] *):has(> button[aria-current="step"]) > button {
+		counter-increment: u-slide u-cur;
+	}
+
+	div:not([role="dialog"] *):has(> button[aria-current="step"]) > button[aria-current="step"] ~ button {
+		counter-increment: u-slide;
+	}
+
+	div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])::after {
+		content: counter(u-cur) "/" counter(u-slide);
+		display: var(--u-slide-counter);
+		position: absolute;
+		bottom: calc(100% + 12px);
+		right: 12px;
+		z-index: 1;
+		padding: 3px 9px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: 600;
+		pointer-events: none;
+	}
 }
 
 @-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*") {
@@ -267,5 +301,34 @@
 
 	main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)):has(div[style*="padding-bottom:1"] > img, div[style*="padding-bottom: 1"] > img) {
 		max-width: min(100%, var(--u-post-photo-width)) !important;
+	}
+
+	div:has(> div > ._acnb) {
+		counter-reset: u-slide u-cur;
+	}
+
+	div:has(> ._acnb) > ._acnb {
+		counter-increment: u-slide u-cur;
+	}
+
+	div:has(> ._acnb) > ._acnf ~ ._acnb {
+		counter-increment: u-slide;
+	}
+
+	div:has(> div > ._acnb)::after {
+		content: counter(u-cur) "/" counter(u-slide);
+		display: var(--u-slide-counter);
+		position: absolute;
+		bottom: 12px;
+		right: 12px;
+		z-index: 1;
+		padding: 3px 9px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: 600;
+		pointer-events: none;
 	}
 }

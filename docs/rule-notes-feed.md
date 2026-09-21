@@ -261,3 +261,30 @@ blurred/black plate drawn behind non-filling media
 Ads and reels wrap their media in a shrink-to-fit anchor. Left as-is, the anchor sizes from its contents while the contents size from the anchor, and the pair resolves to 0x0. Matching on any padding-bottom box catches both without depending on a generated class name.
 
 
+
+## The slide counter — `div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])` and its three companions
+
+The feed half of the carousel slide counter, added 2026-09-21. Four rules, and they only make sense read together:
+
+```
+host          counter-reset: u-slide u-cur
+dot           counter-increment: u-slide u-cur
+active ~ dot  counter-increment: u-slide
+host::after   content: counter(u-cur) "/" counter(u-slide)
+```
+
+`u-slide` counts every dot. `u-cur` counts only up to the active one, because the third rule overrides the second for dots that FOLLOW the active dot and leaves `u-cur` out of their increment. So both numbers are readable at a single element, which is what allows one pill rather than two pieces that have to be seamed together. Counters resolve in tree order and `host::after` is the host's last child, so it has seen every increment below it.
+
+`counter-reset` on the host, never on `:root` or the strip, is what keeps two carousels independent. **This was measured live, not assumed**: with two feed carousels on screen, clicking through one advanced its own index 0 to 6 while the other stayed at 1 throughout. A page-wide counter would have made the second read as a continuation of the first.
+
+WHY THE DOTS ARE MATCHED STRUCTURALLY. The obvious hook is `button[aria-label^="Go to slide"]`, and it works -- on an English page. `aria-label` is prose and is localised, so a style keyed on it silently does nothing for everyone else. `aria-current="step"` is an ARIA token rather than prose, so it is safe, and it identifies the strip; the dots are then just that strip's `> button` children. Measured: every dot container's children are dots and nothing else, on both widgets, across every snapshot -- so `> button` needs no further qualification.
+
+WHY THE HOST IS FOUR LEVELS UP. The chain is host > A > B > strip > buttons, hence `:has(> div > div > div > button[...])`. The nearer candidates do not work. The strip itself sits inside a 50px `overflow: hidden` window -- the thing that shrinks the outer dots on a long carousel -- so a badge anchored there is clipped. The host is the first ancestor outside that clip, and it is already `position: relative`, which makes it the badge's containing block with no change to Instagram's own layout. Its top edge is the media's bottom edge, so `bottom: calc(100% + 12px)` puts the badge 12px above the bottom of the media, overlaid on the media itself.
+
+`position: relative` is restated on the host even though every host measured already had it. It costs nothing where it is already true and it keeps the rule self-contained: the badge's containing block is then guaranteed by this file rather than by an Instagram declaration that could move.
+
+The dots are not touched at all -- no size, `overflow` or `transform` change -- so they stay clickable. `counter-increment` has no layout effect, so with the setting hidden the only trace of all this is two inert properties.
+
+Match counts across the twenty-one snapshots: 4 on `Instagram_feed3.html`, 4 on `Instagram_feed2.html`, 2 on `Instagram_feed1.html`, 4 on `Instagram_post_modal_over_feed.html` (the feed BEHIND the modal), and **0 on every other capture** -- every reel, every single photo, every post page, and the single-photo modal. Rendered proof: `2/6` on the first feed3 carousel, whose strip shows six dots with the second active.
+
+The `:not([role="dialog"] *)` guard is defensive rather than load-bearing. A modal carousel uses the OTHER widget entirely -- see the post-page note -- so this selector cannot reach one. The guard is there because that is not obvious from the selector, and because the rule is keyed on a dot strip rather than on `article`, which is what the hard rule in `CLAUDE.md` is written around.
