@@ -25,5 +25,3 @@ One fix and one new setting. Your saved values carry over untouched, and the new
 
 - **Feed carousels no longer go blank after you view a story.** Coming back to the feed from a story left carousels as empty boxes that never filled in again unless you scrolled them away and back. That was this style's doing: the rule that widens the media measured itself against a parent that had nothing to size it while Instagram had the slides unloaded, and the pair collapsed to nothing. It now has a floor it cannot fall below. Nothing else about the layout changes.
 - **A carousel can show which slide you are on.** A new setting, **Carousels: a slide counter (3/7) over the media**, puts a small pill on carousels with the current slide and the total — in the feed, on post and reel pages, and on a post opened in a lightbox. It starts **hidden**, so switch it on if you want it. The dots stay exactly where they are and stay clickable; the counter sits near the top of the photo in the feed, and in the bottom corner of it on a post page.
-
-Not covered: carousels with more than 16 slides have not been checked. If you find one where the total reads low, that is why.

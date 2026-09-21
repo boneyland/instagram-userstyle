@@ -180,4 +180,4 @@ Use the `shipping-a-release` skill (`.claude/skills/shipping-a-release/`, untrac
 
 ## Open questions
 
-Residual uncertainty, not pending work, lives in `docs/open-questions.md` — ten entries covering the Chromium floor, the shapes covered by construction rather than end to end, and the ratios nothing has been captured at. **Read the relevant entry before claiming a shape is handled.** The four prohibitions those entries carry are stated in the Hard rules above, because they fire mid-edit with no trigger phrase; the evidence behind each is in that file.
+Residual uncertainty, not pending work, lives in `docs/open-questions.md` — eleven entries covering the Chromium floor, the shapes covered by construction rather than end to end, and the ratios nothing has been captured at. **Read the relevant entry before claiming a shape is handled.** The four prohibitions those entries carry are stated in the Hard rules above, because they fire mid-edit with no trigger phrase; the evidence behind each is in that file.

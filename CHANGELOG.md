@@ -34,9 +34,9 @@ Placement differs for the same reason, and on the feed it differs again with the
 
 A carousel opened as a modal uses the post-page widget, so the post block already covers it -- confirmed against two captures taken on 2026-09-21, rendering `1/5` inside the modal.
 
-One placement gap remains: if the window is narrow enough that the caption column wraps below the media while still being 800px or wider, the feed badge is misplaced. CSS cannot ask whether a flex line wrapped, so no single rule covers both states.
+One placement gap remains, and it is a deliberate trade. The feed badge reaches the media from the caption column beside it, so it only works while the post runs two columns. When the caption drops below the media instead -- because the window is narrow, or because the media column is set wide enough to squeeze the caption below its minimum -- the badge goes off-screen rather than moving with it. It is **absent, not misplaced**: nothing lands in the wrong place. The two layouts invert both anchors at once and CSS cannot ask whether a flex line wrapped, so no single rule covers them.
 
-Untested: carousels with more than 16 slides. Dot count equalled slide count at 3, 5, 6, 7, 9, 10, 11 and 16 across every capture and both live checks, but if Instagram ever drops dots on a very long carousel rather than shrinking them, the total would read low with nothing to signal it.
+The total is read from the dots Instagram renders, one per slide. That was checked at 3, 5, 6, 7, 9, 10, 11 and 16 slides across the captures, and confirmed live at 17 to 19 and again at **20, Instagram's own maximum**, with every number correct -- so the counter is verified across the full range a carousel can have. The feed shrinks the outer dots of a long carousel rather than dropping them, which is what the clipped dot strip is for.
 
 ## 2026.9.17.1
 
