@@ -25,7 +25,9 @@ Modes
                   keep excluding
   --diff  a b     apply a and b to every snapshot at its own URL and diff every
                   computed property of every element. This is the measurement
-                  to run after changing a regexp()
+                  to run after changing a regexp(). Snapshots run smallest
+                  first, one browser each, under a memory watchdog; add
+                  --only SUBSTRING to measure a single snapshot
 
 Exit status is 0 unless a browser run or a file read fails. A diff is a result,
 not a failure -- read the table.
@@ -41,7 +43,12 @@ import shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from verify import var_defaults, SNAPSHOTS  # the :root block Stylus builds from the header
+# var_defaults is the :root block Stylus builds from the header. The rest is
+# the shared browser harness: one bounded probe and one memory watchdog, so
+# both scripts fail a run rather than the machine. See verify.py's MEM_FLOOR_MB.
+from verify import (var_defaults, SNAPSHOTS, PROBE_CORE, MEM_FLOOR_MB,
+                    make_workdir, write_page,
+                    run_firefox_guarded)
 
 
 # --------------------------------------------------------------------------
@@ -129,14 +136,24 @@ def snapshot_url(path):
     return m.group(1) if m else None
 
 
-def find_snapshots():
+def find_snapshots(only=None):
+    """Every snapshot that records its own URL, smallest file first.
+
+    Size order is deliberate. The captures run from 20MB to 105MB and the
+    largest is by far the most expensive to measure, so running it last means
+    a run that cannot finish still banks every other row first."""
     out = []
-    for f in sorted(os.listdir(SNAPSHOTS)):
-        if f.endswith(".html"):
-            u = snapshot_url(os.path.join(SNAPSHOTS, f))
-            if u:
-                out.append((f, u))
-    return out
+    for f in os.listdir(SNAPSHOTS):
+        if not f.endswith(".html"):
+            continue
+        if only and only.lower() not in f.lower():
+            continue
+        p = os.path.join(SNAPSHOTS, f)
+        u = snapshot_url(p)
+        if u:
+            out.append((f, u, os.path.getsize(p)))
+    out.sort(key=lambda r: r[2])
+    return [(f, u) for f, u, _ in out]
 
 
 # --------------------------------------------------------------------------
@@ -146,48 +163,26 @@ def find_snapshots():
 PAGE_JS = r"""
 (function () {
   function say(s) { dump("@@ " + s + "\n"); }
+__CORE__
   var A = __A__, B = __B__;
   var els = Array.prototype.slice.call(document.querySelectorAll("*"));
+  var KEYS = probeKeys(els, __DECL__);
 
-  // Firefox's computed-style enumeration is not stable between snapshots: it
-  // can list one custom property twice, displacing another. So fix the key
-  // list up front and read it by name on both sides -- same reasoning, and
-  // same fix, as verify.py.
-  var KEYS = (function () {
-    var k = {}, i, j;
-    for (i = 0; i < els.length; i++) {
-      var cs = getComputedStyle(els[i]);
-      for (j = 0; j < cs.length; j++) k[cs[j]] = 1;
-    }
-    var d = __DECL__;
-    for (i = 0; i < d.length; i++) k[d[i]] = 1;
-    return Object.keys(k);
-  })();
-
-  function snap(css) {
-    var s = null;
-    if (css) {
-      s = document.createElement("style");
-      s.textContent = css;
-      document.head.appendChild(s);
-    }
-    var rows = new Array(els.length);
-    for (var i = 0; i < els.length; i++) {
-      var cs = getComputedStyle(els[i]), o = {};
-      for (var j = 0; j < KEYS.length; j++) o[KEYS[j]] = cs.getPropertyValue(KEYS[j]);
-      rows[i] = o;
-    }
-    if (s) s.remove();
-    return rows;
-  }
-
-  var a = snap(A), b = snap(B);
+  // Side A is held as one joined string per element. The largest snapshot has
+  // 23589 elements against ~350 keys, so a table per side is millions of live
+  // strings -- enough to take the machine down, which it did on 2026-09-21.
+  var a = probeRows(A, els, KEYS);
+  var b = probeRows(B, els, KEYS);
   var nStd = 0, nCus = 0, byProp = {}, shown = [];
   for (var i = 0; i < els.length; i++) {
-    for (var p in a[i]) {
+    if (a[i] === b[i]) { a[i] = b[i] = null; continue; }
+    var x = probeSplit(a[i]), y = probeSplit(b[i]);
+    a[i] = b[i] = null;                  // release each row as it is consumed
+    for (var j = 0; j < KEYS.length; j++) {
       // a key missing from one side is unobservable, not a difference
-      if (a[i][p] === undefined || b[i][p] === undefined) continue;
-      if (a[i][p] === b[i][p]) continue;
+      if (x[j] === undefined || y[j] === undefined) continue;
+      if (x[j] === y[j]) continue;
+      var p = KEYS[j];
       if (p.indexOf("--") === 0) nCus++; else nStd++;
       byProp[p] = (byProp[p] || 0) + 1;
       if (p.indexOf("--") !== 0 && shown.length < 25) {
@@ -195,7 +190,7 @@ PAGE_JS = r"""
         shown.push("<" + e.tagName.toLowerCase()
           + (e.className && typeof e.className === "string"
                ? "." + e.className.trim().split(/\s+/).slice(0, 3).join(".") : "")
-          + ">  " + p + ": " + a[i][p] + " -> " + b[i][p]);
+          + ">  " + p + ": " + x[j] + " -> " + y[j]);
       }
     }
   }
@@ -210,40 +205,22 @@ PAGE_JS = r"""
 
 
 def run_pair(snapshot, sheet_a, sheet_b):
-    """Load one snapshot and diff every computed property under two sheets."""
+    """Load one snapshot and diff every computed property under two sheets.
+
+    Returns (lines, error, low_mb). Each snapshot gets its own browser, so one
+    snapshot that cannot be measured costs that row and not the whole run."""
     path = os.path.join(SNAPSHOTS, snapshot)
-    html = open(path, encoding="utf-8", errors="replace").read()
     decl = sorted({m for s in (sheet_a, sheet_b)
                    for m in re.findall(r'(--[\w-]+)\s*:', s)})
-    js = (PAGE_JS.replace("__A__", json.dumps(sheet_a))
+    js = (PAGE_JS.replace("__CORE__", PROBE_CORE)
+                 .replace("__A__", json.dumps(sheet_a))
                  .replace("__B__", json.dumps(sheet_b))
                  .replace("__DECL__", json.dumps(decl)))
-    workdir = tempfile.mkdtemp(prefix="scoped-")
+    workdir = make_workdir("scoped-")
     try:
-        # The snapshot contains more than one "</body>"; only the last is the
-        # real end of the document. Injecting at the first lands inside markup
-        # that never runs, and the script silently does nothing.
-        i = html.rfind("</body>")
-        tag = "<script>" + js + "</script>"
-        html = (html[:i] + tag + html[i:]) if i != -1 else (html + tag)
         page = os.path.join(workdir, "page.html")
-        open(page, "w", encoding="utf-8").write(html)
-
-        profile = os.path.join(workdir, "profile")
-        os.makedirs(profile, exist_ok=True)
-        open(os.path.join(profile, "user.js"), "w").write(
-            'user_pref("browser.dom.window.dump.enabled", true);\n')
-
-        r = subprocess.run(
-            ["firefox", "--headless", "--profile", profile,
-             "--screenshot", os.path.join(workdir, "shot.png"),
-             "--window-size=1638,900", "file://" + page],
-            capture_output=True, text=True, timeout=900)
-        lines = [l[3:] for l in (r.stdout + r.stderr).splitlines()
-                 if l.startswith("@@ ")]
-        if not lines or lines[-1] != "done":
-            return None
-        return lines
+        write_page(path, "<script>" + js + "</script>", page)
+        return run_firefox_guarded(page, workdir, timeout=900)
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
@@ -306,25 +283,30 @@ def mode_urls(style):
     return 0
 
 
-def mode_diff(a, b):
-    snaps = find_snapshots()
+def mode_diff(a, b, only=None):
+    snaps = find_snapshots(only)
     if not snaps:
-        print("  x FAIL  no snapshots with a SingleFile url: comment found")
+        what = f" matching {only!r}" if only else ""
+        print(f"  x FAIL  no snapshots{what} with a SingleFile url: comment found")
         return 1
     na, nb = (os.path.basename(p).replace(".user.css", "") for p in (a, b))
     print(f"\nComputed-property diff, every snapshot at its own URL")
-    print(f"  {na}  ->  {nb}\n")
+    print(f"  {na}  ->  {nb}")
+    print(f"  {len(snaps)} snapshots, smallest first, "
+          f"one browser each, {MEM_FLOOR_MB}MB memory floor\n")
 
     rows, failed = [], False
     for snap, url in snaps:
         sa, sb = prepare_scoped(a, url), prepare_scoped(b, url)
         ba, bb = blocks_for(open(a, encoding='utf-8').read(), url), \
                  blocks_for(open(b, encoding='utf-8').read(), url)
-        lines = run_pair(snap, sa, sb)
+        lines, err, low = run_pair(snap, sa, sb)
         if lines is None:
-            print(f"  x FAIL  browser run did not complete on {snap}")
+            print(f"  x FAIL  {snap}: {err.splitlines()[0]}")
             failed = True
             continue
+        if low is not None and low < MEM_FLOOR_MB * 2:
+            print(f"  ! {snap}: only {low}MB of memory to spare at the worst point")
         info = {}
         props, els = [], []
         for l in lines:
@@ -389,8 +371,16 @@ def main():
         return 2
     if av[0] == "--urls" and len(av) == 2:
         return mode_urls(resolve(av[1]))
-    if av[0] == "--diff" and len(av) == 3:
-        return mode_diff(resolve(av[1]), resolve(av[2]))
+    if av[0] == "--diff":
+        only = None
+        if "--only" in av:
+            i = av.index("--only")
+            if i + 1 >= len(av):
+                sys.exit("--only needs a substring of a snapshot filename")
+            only = av[i + 1]
+            av = av[:i] + av[i + 2:]
+        if len(av) == 3:
+            return mode_diff(resolve(av[1]), resolve(av[2]), only)
     if len(av) == 2 and not av[0].startswith("--"):
         return mode_one(resolve(av[0]), av[1])
     print(__doc__)

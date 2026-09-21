@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.17.1
+@version        2026.9.21.1
 @namespace      userstyles.world/user/boneyland
 @description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable.
 @author         boneyland
@@ -89,6 +89,7 @@
 		main div[style*="min(470px"]:not(li *):not(:has(ul)) {
 			width: 100% !important;
 			max-width: 100% !important;
+			min-width: min(468px, var(--u-media-px));
 		}
 
 		main div[style*="min(470px"]:not([style*="--x-width"]):has(ul) {

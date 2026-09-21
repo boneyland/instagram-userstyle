@@ -28,13 +28,29 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SNAPSHOTS = os.path.join(HERE, "Instagram_snapshots")
 TAB = 4
+
+# A run must never be able to take the machine down with it. The snapshots are
+# 20-105MB of SingleFile HTML and the largest holds 23589 elements, so a probe
+# that keeps a full computed-style table per sheet costs gigabytes. On a 15GB
+# machine backed by zram -- where swap is compressed into the same RAM it is
+# meant to relieve -- that wedges the desktop hard enough to need a power
+# cycle, which is what happened on 2026-09-21 before this guard existed.
+#
+# Two defences, because either alone is not enough. The probes below keep one
+# joined string per element rather than a table (see PROBE_CORE), and every
+# Firefox launch goes through run_firefox_guarded, which kills the browser if
+# free memory falls past a floor. Override the floor with VERIFY_FLOOR_MB.
+MEM_FLOOR_MB = int(os.environ.get("VERIFY_FLOOR_MB", "2200"))
 
 
 # --------------------------------------------------------------------------
@@ -196,12 +212,216 @@ def check_metadata(paths):
 
 
 # --------------------------------------------------------------------------
+# Driving Firefox without putting the machine at risk
+# --------------------------------------------------------------------------
+
+def mem_available_mb():
+    """MemAvailable, which is what actually predicts thrashing -- MemFree
+    ignores reclaimable cache and reads far lower than the truth."""
+    try:
+        with open("/proc/meminfo") as f:
+            for line in f:
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) // 1024
+    except OSError:
+        pass
+    return None          # unreadable: the watchdog then simply does not fire
+
+
+FIREFOX_PREFS = (
+    'user_pref("browser.dom.window.dump.enabled", true);\n'
+    # One content process, so there is a single thing to watch and kill.
+    'user_pref("dom.ipc.processCount", 1);\n'
+    # Cap the JS heap. The probe is bounded by design, but this turns a
+    # pathological page into a script error rather than a machine-wide OOM.
+    'user_pref("javascript.options.mem.max", 3072);\n'
+    'user_pref("browser.sessionstore.resume_from_crash", false);\n'
+    # Decoded image surfaces dominate RSS on these captures -- they are
+    # SingleFile pages with every image inlined as base64. Layout reads
+    # intrinsic dimensions from the image headers, not from this cache, so
+    # capping it cuts memory without moving anything the probe measures.
+    'user_pref("image.mem.surfacecache.max_size_kb", 262144);\n'
+    'user_pref("image.animation_mode", "none");\n')
+
+
+def _find_last(path, needle, window=1 << 20):
+    """Byte offset of the last `needle` in a file, without reading it all."""
+    size = os.path.getsize(path)
+    with open(path, "rb") as f:
+        pos, overlap = size, len(needle)
+        while pos > 0:
+            start = max(0, pos - window)
+            f.seek(start)
+            buf = f.read(min(window + overlap, size - start))
+            i = buf.rfind(needle)
+            if i != -1:
+                return start + i
+            pos = start
+    return -1
+
+
+def write_page(src, tag, dest, chunk=1 << 20):
+    """Copy a snapshot to `dest` with `tag` injected before the LAST </body>.
+
+    Streamed in binary on purpose. Read as one string and re-joined around the
+    tag, a 105MB capture costs several hundred MB of Python heap before
+    Firefox has even started -- and the snapshots are the reason this harness
+    has a memory floor at all.
+
+    The snapshot contains more than one "</body>"; only the last is the real
+    end of the document. Injecting at the first lands inside markup that never
+    runs, and the probe silently does nothing.
+    """
+    off = _find_last(src, b"</body>")
+    if off == -1:
+        off = os.path.getsize(src)       # no </body>: append, as before
+    with open(src, "rb") as r, open(dest, "wb") as w:
+        remaining = off
+        while remaining > 0:
+            buf = r.read(min(chunk, remaining))
+            if not buf:
+                break
+            w.write(buf)
+            remaining -= len(buf)
+        w.write(tag.encode("utf-8"))
+        shutil.copyfileobj(r, w, chunk)
+
+
+def make_workdir(prefix):
+    """Scratch space for the page copy and the browser profile.
+
+    The page copy is as large as the snapshot. On a system where the system
+    temp directory is tmpfs -- Fedora's /tmp is -- that copy is held in RAM,
+    which is the one place this harness is trying not to spend. Set
+    VERIFY_WORKDIR to a disk-backed directory to move it off RAM.
+    """
+    return tempfile.mkdtemp(prefix=prefix, dir=os.environ.get("VERIFY_WORKDIR"))
+
+
+def write_profile(workdir):
+    profile = os.path.join(workdir, "profile")
+    os.makedirs(profile, exist_ok=True)
+    open(os.path.join(profile, "user.js"), "w").write(FIREFOX_PREFS)
+    return profile
+
+
+def run_firefox_guarded(page, workdir, timeout=900, floor_mb=None):
+    """Render `page` in headless Firefox and return (lines, error, low_mb).
+
+    `lines` are the "@@ " lines the probe dumped, or None on failure, in which
+    case `error` says why. `low_mb` is the lowest MemAvailable seen, which is
+    worth printing even on success -- it is the only warning that a run came
+    close to the floor.
+
+    The watchdog polls MemAvailable and SIGKILLs the whole process group if it
+    drops past the floor. Killing the browser costs one run; letting the
+    kernel resolve it costs the session. start_new_session gives Firefox its
+    own group so no child survives the kill.
+    """
+    floor = MEM_FLOOR_MB if floor_mb is None else floor_mb
+    profile = write_profile(workdir)
+    proc = subprocess.Popen(
+        ["firefox", "--headless", "--profile", profile,
+         "--screenshot", os.path.join(workdir, "shot.png"),
+         "--window-size=1638,900", "file://" + page],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+        start_new_session=True)
+
+    state = {"killed": None, "low": mem_available_mb()}
+
+    def watch():
+        while proc.poll() is None:
+            m = mem_available_mb()
+            if m is None:
+                return
+            if state["low"] is None or m < state["low"]:
+                state["low"] = m
+            if m < floor:
+                state["killed"] = f"MemAvailable {m}MB fell below the {floor}MB floor"
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+                except OSError:
+                    pass
+                return
+            time.sleep(0.4)
+
+    threading.Thread(target=watch, daemon=True).start()
+    try:
+        out, err = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        state["killed"] = f"no result after {timeout}s"
+        try:
+            os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
+        except OSError:
+            pass
+        out, err = proc.communicate()
+
+    if state["killed"]:
+        return None, state["killed"], state["low"]
+    lines = [l[3:] for l in (out + err).splitlines() if l.startswith("@@ ")]
+    if not lines or lines[-1] != "done":
+        tail = "\n".join((out + err).splitlines()[-15:])
+        return None, "browser run did not complete\n" + tail, state["low"]
+    return lines, None, state["low"]
+
+
+# --------------------------------------------------------------------------
 # Checks 2-4 - drive a real Firefox over the saved snapshot
 # --------------------------------------------------------------------------
+
+# Shared by both probes here and in scoped.py. A row is every value in KEYS
+# joined by one separator character, not an object of KEYS.length strings:
+# same information, but one string per element instead of several hundred,
+# which is the difference between a run that fits in memory and one that does
+# not. Rows are split back apart one element at a time, only where they
+# differ, so the expanded form never exists for more than one element at once.
+PROBE_CORE = r"""
+  var SEP = String.fromCharCode(1);
+
+  // Firefox's computed-style enumeration is not stable between snapshots:
+  // it can list one custom property twice, which displaces another from
+  // that snapshot's list even though the total count is unchanged. Keying
+  // the comparison off each snapshot's own enumeration therefore either
+  // skips real properties or invents differences against undefined.
+  // So the key list is fixed up front -- every name enumerated anywhere
+  // with no stylesheet applied, plus every custom property the sheets
+  // themselves declare -- and each snapshot reads that same list by name.
+  // getPropertyValue works regardless of enumeration, and a property that
+  // does not apply reads as "" consistently on both sides.
+  function probeKeys(els, declared) {
+    var k = {}, i, j;
+    for (i = 0; i < els.length; i++) {
+      var cs = getComputedStyle(els[i]);
+      for (j = 0; j < cs.length; j++) k[cs[j]] = 1;
+    }
+    for (i = 0; i < declared.length; i++) k[declared[i]] = 1;
+    return Object.keys(k);
+  }
+
+  function probeRows(css, els, KEYS) {
+    var s = null;
+    if (css) {
+      s = document.createElement("style");
+      s.textContent = css;
+      document.head.appendChild(s);
+    }
+    var rows = new Array(els.length);
+    for (var i = 0; i < els.length; i++) {
+      var cs = getComputedStyle(els[i]), parts = new Array(KEYS.length);
+      for (var j = 0; j < KEYS.length; j++) parts[j] = cs.getPropertyValue(KEYS[j]);
+      rows[i] = parts.join(SEP);
+    }
+    if (s) s.remove();
+    return rows;
+  }
+
+  function probeSplit(row) { return row.split(SEP); }
+"""
 
 PAGE_JS = r"""
 (function () {
   function say(s) { dump("@@ " + s + "\n"); }
+__CORE__
   var SHEETS = __SHEETS__;
   var els = Array.prototype.slice.call(document.querySelectorAll("*"));
 
@@ -221,44 +441,10 @@ PAGE_JS = r"""
     return { rules: rules, decls: decls };
   }
 
-  // Firefox's computed-style enumeration is not stable between snapshots:
-  // it can list one custom property twice, which displaces another from
-  // that snapshot's list even though the total count is unchanged. Keying
-  // the comparison off each snapshot's own enumeration therefore either
-  // skips real properties or invents differences against undefined.
-  // So the key list is fixed up front -- every name enumerated anywhere
-  // with no stylesheet applied, plus every custom property the sheets
-  // themselves declare -- and each snapshot reads that same list by name.
-  // getPropertyValue works regardless of enumeration, and a property that
-  // does not apply reads as "" consistently on both sides.
-  var KEYS = (function () {
-    var k = {}, i, j;
-    for (i = 0; i < els.length; i++) {
-      var cs = getComputedStyle(els[i]);
-      for (j = 0; j < cs.length; j++) k[cs[j]] = 1;
-    }
-    var declared = __DECLARED__;
-    for (i = 0; i < declared.length; i++) k[declared[i]] = 1;
-    return Object.keys(k);
-  })();
+  var KEYS = probeKeys(els, __DECLARED__);
   say("keys " + KEYS.length);
 
-  function snap(css) {
-    var s = null;
-    if (css) {
-      s = document.createElement("style");
-      s.textContent = css;
-      document.head.appendChild(s);
-    }
-    var rows = new Array(els.length);
-    for (var i = 0; i < els.length; i++) {
-      var cs = getComputedStyle(els[i]), o = {};
-      for (var j = 0; j < KEYS.length; j++) o[KEYS[j]] = cs.getPropertyValue(KEYS[j]);
-      rows[i] = o;
-    }
-    if (s) s.remove();
-    return rows;
-  }
+  function snap(css) { return probeRows(css, els, KEYS); }
 
   say("elements " + els.length);
 
@@ -273,32 +459,23 @@ PAGE_JS = r"""
   var base = snap("");
   for (var n = 0; n < names.length; n++) snaps[names[n]] = snap(SHEETS[names[n]]);
 
-  // Firefox's computed-style enumeration sometimes lists one custom
-  // property twice, which displaces another from that snapshot's key list
-  // even though the total count is unchanged. Iterating only the left
-  // side would silently skip the displaced property; iterating the union
-  // instead compares a real value against undefined and invents a
-  // difference. So: walk the union, but treat a key missing from either
-  // side as unobservable rather than as a mismatch, and count how often
-  // that happens so it never hides silently.
-  function union(x, y) {
-    var k = {}, p;
-    for (p in x) k[p] = 1;
-    for (p in y) k[p] = 1;
-    return k;
-  }
+  // Both sides read the same fixed KEYS list by name, so a row always has
+  // exactly KEYS.length fields and the two sides always line up by index --
+  // the enumeration instability the key list exists to defeat cannot reach
+  // this far. The undefined guard is kept anyway, and counted, so that if
+  // that assumption ever stops holding it surfaces instead of hiding.
   var nSkipped = 0;
-  function differs(x, y, p) {
-    if (x[p] === undefined || y[p] === undefined) { nSkipped++; return false; }
-    return x[p] !== y[p];
-  }
 
   // check 3: each sheet must actually change the page
   for (var n = 0; n < names.length; n++) {
     var changed = 0, cur = snaps[names[n]];
     for (var i = 0; i < els.length; i++) {
-      var ks = union(cur[i], base[i]);
-      for (var p in ks) if (differs(cur[i], base[i], p)) changed++;
+      if (cur[i] === base[i]) continue;      // identical row: nothing to split
+      var x = probeSplit(cur[i]), y = probeSplit(base[i]);
+      for (var j = 0; j < KEYS.length; j++) {
+        if (x[j] === undefined || y[j] === undefined) { nSkipped++; continue; }
+        if (x[j] !== y[j]) changed++;
+      }
     }
     say("changed " + names[n] + " " + changed);
   }
@@ -308,18 +485,19 @@ PAGE_JS = r"""
     var a = snaps[names[0]], b = snaps[names[1]], diffs = [];
     var nCustom = 0, nStandard = 0;
     for (var i = 0; i < els.length; i++) {
-      var ks = union(a[i], b[i]);
-      for (var p in ks) {
-        if (differs(a[i], b[i], p)) {
-          var e = els[i];
-          if (p.indexOf("--") === 0) nCustom++; else nStandard++;
-          diffs.push("<" + e.tagName.toLowerCase()
-            + (e.id ? " id=" + e.id : "")
-            + (e.className && e.className.baseVal === undefined
-                 ? ' class="' + String(e.className).slice(0, 60) + '"' : "")
-            + ">  " + p + ": " + names[0] + "=" + a[i][p]
-            + "  " + names[1] + "=" + b[i][p]);
-        }
+      if (a[i] === b[i]) continue;
+      var x = probeSplit(a[i]), y = probeSplit(b[i]);
+      for (var j = 0; j < KEYS.length; j++) {
+        if (x[j] === undefined || y[j] === undefined) { nSkipped++; continue; }
+        if (x[j] === y[j]) continue;
+        var p = KEYS[j], e = els[i];
+        if (p.indexOf("--") === 0) nCustom++; else nStandard++;
+        diffs.push("<" + e.tagName.toLowerCase()
+          + (e.id ? " id=" + e.id : "")
+          + (e.className && e.className.baseVal === undefined
+               ? ' class="' + String(e.className).slice(0, 60) + '"' : "")
+          + ">  " + p + ": " + names[0] + "=" + x[j]
+          + "  " + names[1] + "=" + y[j]);
       }
     }
     say("diffcount " + diffs.length);
@@ -346,35 +524,21 @@ def run_browser(sheets, workdir):
     if not snap:
         print(f"  x FAIL  no 'Instagram_feed*.html' snapshot found in {SNAPSHOTS}")
         return None
-    html = open(snap, encoding="utf-8", errors="replace").read()
     declared = sorted({m for s in sheets.values()
                        for m in re.findall(r'(--[\w-]+)\s*:', s)})
-    js = (PAGE_JS.replace("__SHEETS__", json.dumps(sheets))
+    js = (PAGE_JS.replace("__CORE__", PROBE_CORE)
+                 .replace("__SHEETS__", json.dumps(sheets))
                  .replace("__DECLARED__", json.dumps(declared)))
-    tag = "<script>" + js + "</script>"
-    # The snapshot contains more than one "</body>"; only the last one is the
-    # real end of the document. Injecting at the first lands inside markup
-    # that never runs, and the script silently does nothing.
-    i = html.rfind("</body>")
-    html = (html[:i] + tag + html[i:]) if i != -1 else (html + tag)
     page = os.path.join(workdir, "page.html")
-    open(page, "w", encoding="utf-8").write(html)
+    write_page(snap, "<script>" + js + "</script>", page)
 
-    profile = os.path.join(workdir, "profile")
-    os.makedirs(profile, exist_ok=True)
-    open(os.path.join(profile, "user.js"), "w").write(
-        'user_pref("browser.dom.window.dump.enabled", true);\n')
-
-    r = subprocess.run(
-        ["firefox", "--headless", "--profile", profile,
-         "--screenshot", os.path.join(workdir, "shot.png"),
-         "--window-size=1638,900", "file://" + page],
-        capture_output=True, text=True, timeout=300)
-    lines = [l[3:] for l in (r.stdout + r.stderr).splitlines() if l.startswith("@@ ")]
-    if not lines or lines[-1] != "done":
-        print("  x FAIL  browser run did not complete")
-        print("\n".join((r.stdout + r.stderr).splitlines()[-15:]))
+    lines, err, low = run_firefox_guarded(page, workdir, timeout=300)
+    if err:
+        print(f"  x FAIL  {err}")
         return None
+    if low is not None and low < MEM_FLOOR_MB * 2:
+        print(f"  ! only {low}MB of memory to spare at the worst point "
+              f"(floor is {MEM_FLOOR_MB}MB)")
     return lines
 
 
@@ -393,7 +557,7 @@ def main():
     results["metadata"] = check_metadata(paths)
 
     sheets = {n: prepare(p) for n, p in zip(names, paths)}
-    workdir = tempfile.mkdtemp(prefix="userstyle-verify-")
+    workdir = make_workdir("userstyle-verify-")
     try:
         print("\n[2] parse + [3] effect + [4] equivalence (headless Firefox, real snapshot)")
         lines = run_browser(sheets, workdir)

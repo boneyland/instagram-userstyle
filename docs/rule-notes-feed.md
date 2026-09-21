@@ -85,6 +85,20 @@ Post column inside the feed column.
 
 The media wrapper, present in EVERY post regardless of type, is what caps media at 468px. :not(li *) skips a carousel's slide frame, whose <li> takes its width from it, so 100% makes both resolve to zero. :not(:has(ul)) skips a carousel's outer wrapper, where widening only adds empty space around the media; the scale rule below handles carousels and relies on this wrapper staying 468px.
 
+`min-width: min(468px, var(--u-media-px))` is a floor rather than a size, and it exists to stop this rule collapsing the column to zero. Reported live on 2026-09-21: after viewing stories from the feed and returning, carousels went blank and stayed blank. Scrolling them out of view and back was the only thing that restored them, and disabling the style stopped it happening at all.
+
+The `width: 100%` above resolves against this wrapper's parent, which is a shrink-to-fit flex item. With the slide list unmounted the parent has nothing else sizing it, so the percentage is circular and both resolve to ZERO, taking the whole subtree below with them. This is the same failure `:not(li *)` already documents one level down -- "100% makes both resolve to zero" -- and `:not(:has(ul))` only holds it off for as long as Instagram keeps the `<ul>` mounted. Feed virtualization unmounts it when you navigate away to stories, which drops the wrapper into exactly the state the guard was never meant to cover.
+
+Measured live in the blank state: the wrapper carries its inline `width: calc(-2px + min(470px, 100vw))`, so 468px, and computes `0px`, with the column at `775x2` and no img, video or ul inside it. Reproduced offline by deleting the `<ul>` from a saved carousel, which collapses the column to `769x2` with the wrapper at `0px` -- the same state, and a deterministic test case that needs no stories round trip.
+
+Why it never recovers on its own is NOT established. The plausible reading is that a zero-height column never re-enters whatever threshold the virtualiser mounts on, so the collapse is self-sustaining -- but that is INFERENCE. What is measured is only that a scroll out and back, which forces a fresh mount, is what clears it.
+
+The floor is built from `--u-media-px` rather than a flat 468px because a flat floor would overflow a narrow media column. `min()` means it can never exceed the column it sits in: at the default settings and a 1638px window it is 468px, which is the width this rule caps media to anyway, so it is inert; at the minimum `--u-media-column` of 20 it drops to about 270px at that same window, and to 68px at the minimum `--u-feed-min`. It tracks the column down wherever the column is narrow and does nothing wherever the column is already wide enough.
+
+REMOVED CANDIDATE. An earlier attempt applied `width: 100%` in BOTH states instead, on the theory that removing the flip would remove the problem. Do not write this back: it makes every carousel hit the zero-width collapse the instant it loads, with no recovery at all. Tried live on 2026-09-21 and strictly worse than the bug it was meant to fix.
+
+Verified on 2026-09-21 against all nineteen snapshots, each at its own URL, via `scoped.py`'s computed-property diff. Only the three feed captures change; every post, reel and modal capture is identical in every computed property, `Instagram-p-id-modal(single_photo).html` included. On the feeds the change is the declaration itself plus repair -- `Instagram_feed1.html` and `Instagram_feed2.html` show wrappers going `width: 0px -> 468px`, and `Instagram_feed3.html` gains 270px of height because that capture already contained an unmounted post whose column had collapsed. Nothing in the diff touches font-size, line-height or zoom.
+
 
 ## `main div[style*="min(470px"]:not([style*="--x-width"]):has(ul)`
 
