@@ -47,7 +47,7 @@ More about ⭕: They get everything else the style does: the width ceiling Insta
 
 ## Settings
 
-Seventeen, all exposed through the Stylus settings pane.
+Eighteen, all exposed through the Stylus settings pane.
 
 | Setting | Default |
 | --- | --- |
@@ -68,12 +68,15 @@ Seventeen, all exposed through the Stylus settings pane.
 | Reel/post pages: maximum height of a portrait reel | 1000px |
 | Reel/post pages: total width of a square/landscape reel and caption | 1500px |
 | Reel/post pages: width of the caption column | 380px |
+| Post modal: width of the caption and comment column | 400px |
 
 On the reel and post pages nothing is sized directly. Every width setting there caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
 
 The two portrait-reel settings bound the same thing from different directions, and whichever is tighter wins: the width setting caps the column, and the height setting caps it by the width a 9:16 video would need to reach that height. Set either low and the reel simply gets smaller, keeping its proportions.
 
 The feed settings are more literal. The media column is set as a share of the feed width and the caption column takes what is left, and the two caps on feed media — maximum width of portrait reel, maximum height of a single photo or reel — bound the media element itself rather than a column around it.
+
+The post modal — a post opened in a floating panel by clicking it in the feed or reaching it from a profile grid — is sized by Instagram rather than by the page settings above, so its caption and comment column has a setting of its own. Unlike the others it is a fixed width rather than a cap: the column is exactly what you set at every window size, and the media beside it grows into whatever the column gives up. Stock behaviour is a column that drifts between 405px and 500px depending on the space available, so the setting is mostly useful for narrowing it — which is what makes the modal usable in a narrow window, such as a phone browser in desktop mode. It stops at 220px because below roughly that a long username in the comments has nowhere left to wrap.
 
 ## Known limitations
 

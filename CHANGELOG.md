@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026.9.22.1
+
+Compared against `2026.9.21.1`, kept as `Instagram-20260921-uploaded.user.css`.
+
+One change: a new setting for the caption and comment column of a post opened as a modal. One rule, one setting, and no change to any page that is not a modal.
+
+### The post modal's caption column is adjustable
+
+New setting, **Post modal: width of the caption and comment column**, default 400px. It pins the right-hand column of a post opened in a floating panel -- by clicking a post in the feed, or reaching a `/p/<id>/` URL from a profile grid.
+
+**Prompted by a use the style was not designed for.** The user disabled Instagram's Android app handler and opened the site in Firefox with desktop mode, where the style turns out to work decently on a phone -- except that the modal's caption column is far too wide for the window. Nothing in the change is mobile-specific and it takes no media query: the column is one width on every screen, and the setting is the same control everywhere.
+
+**`min-width` was the culprit, not `max-width`.** Instagram gives the column `flex-grow:1; flex-shrink:2` between `min-width:405px` and `max-width:500px`, beside a media column at `flex-grow:1; flex-shrink:1` whose inline `flex-basis` and `max-width` are one number, measured live as `(vh - 48) * min(AR, 1)` -- so the media's width comes from the HEIGHT budget, and a landscape post is boxed square and letterboxed inside it. In a narrow window the two shrink together until the caption hits its 405px floor and stops -- so on a phone more than half the window goes to comments, and the 500px ceiling is never reached. The setting replaces both bounds with one value, which pins the column instead of leaving it to drift between the two. Confirmed live: the media gets `min(max-width, (vw - 128) - caption width)`, so it grows into whatever the caption gives up until it reaches its own cap -- which on a tall narrow window it never does, and on a short wide one it does early. `docs/rule-notes-post.md` has the 38-row measurement and the two sweeps behind it.
+
+**A third declaration is doing as much work as the other two, and the setting is unusable below 335px without it.** The wrapper directly inside the caption column carries Instagram's `.x1q2y9iw { min-width: var(--media-info) }`, and `--media-info` -- Instagram's own caption-column token -- reaches a modal as an inline style on an ancestor at its stock **335px**. Pinning the column narrower than that left the wrapper still demanding 335, and the comment list, the action bar and the composer all spilled out over the media to the right. Reported from a live check at 882x1757, and reproduced offline at the same thresholds: without the token, 8 elements escape the column at 330 and 46 at 320; with it, nothing escapes down to 210. So the rule sets `--media-info` to the setting as well. It needs no `!important` -- an inline style only wins at the element it is written on, so declaring the token on the column beats the ancestor's for the whole subtree.
+
+**The range stops at 220, not 200, and the reason is content rather than layout.** At 200 a single un-wrappable link about 142px wide still overflows by roughly nine on the single-photo modal, while the carousel modal is clean at the same setting. A longer username would reach further, so no fixed minimum is provably safe for every post; 220 is where both captures are clean with margin.
+
+The rule is `div[role="dialog"] article div[style*="--x-maxWidth"] > div + div`, in the `regexp()` post block -- opening a post as a modal changes the URL to `/p/<id>/`, so that block already owns the page, the same way it already owns a modal carousel's slide counter. It needs no `!important`: at (0,2,5) against Instagram's (0,1,0) it wins on specificity alone.
+
+**The `[role="dialog"]` scope is load-bearing.** Without it the same selector matches 1 element on each of the three feed captures and 2 on `Instagram_post_modal_over_feed.html`. With it, 1 on each of the three modal captures and 0 on the other eighteen.
+
+The obvious hook -- `.x65f84u.x1vq45kp`, the two atoms that carry the bounds -- measures identically and was rejected anyway: stylex hashes those names from the declarations they hold, so `.x65f84u` IS `max-width:500px`. Retuning either number renames the class and a rule keyed on the old name stops matching silently. `docs/rule-notes-post.md` records the full reasoning.
+
+Measured across all twenty-one snapshots at the default: standard-property changes on exactly the three modal captures -- 204, 164 and 164 -- and 0 on the other eighteen, whose only difference is the new variable inheriting from `:root` without being read. On a modal, `max-width` goes 500px to 400px on one element and `min-width` 405px to 400px on two -- the column and that inner wrapper -- with `--media-info` following through the subtree and about 38 descendant widths moving with it. No `font-size`, no `line-height`, no `zoom` anywhere.
+
+The media side of this is not measurable offline: SingleFile froze the JS-written inline sizes, and all three captures carry the identical `flex-basis:925px`, so the corpus cannot show that figure responding to anything. It was checked live instead, which is also where the 335px floor came from. `docs/rule-notes-post.md` records both, and what remains unverified.
+
 ## 2026.9.21.1
 
 Compared against `2026.9.17.1`, kept as `Instagram-20260917-uploaded.user.css`.

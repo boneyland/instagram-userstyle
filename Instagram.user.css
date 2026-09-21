@@ -1,8 +1,8 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.21.1
+@version        2026.9.22.1
 @namespace      userstyles.world/user/boneyland
-@description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
+@description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column on post pages and in the post modal, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
 @author         boneyland
 @homepageURL    https://github.com/boneyland/instagram-userstyle
 @license        MIT
@@ -31,6 +31,7 @@
 @var range  u-reel-height        "Reel/post pages: maximum height of a portrait reel"                   [1000, 400, 2000, 10, "px"]
 @var range  u-reel-landscape     "Reel/post pages: total width of a square/landscape reel and caption"  [1500, 400, 2000, 10, "px"]
 @var range  u-reel-media-info    "Reel/post pages: width of the caption column"                         [380, 200, 800, 1, "px"]
+@var range  u-modal-caption      "Post modal: width of the caption and comment column"                  [400, 220, 700, 10, "px"]
 ==/UserStyle== */
 
 @-moz-document domain("www.instagram.com") {
@@ -311,6 +312,12 @@
 
 	main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)):has(div[style*="padding-bottom:1"] > img, div[style*="padding-bottom: 1"] > img) {
 		max-width: min(100%, var(--u-post-photo-width)) !important;
+	}
+
+	div[role="dialog"] article div[style*="--x-maxWidth"] > div + div {
+		--media-info: var(--u-modal-caption);
+		min-width: var(--u-modal-caption);
+		max-width: var(--u-modal-caption);
 	}
 
 	div:has(> div > ._acnb) {
