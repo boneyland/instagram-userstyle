@@ -1,0 +1,344 @@
+/* ==UserStyle==
+@name           Instagram Desktop Site
+@version        2026.9.21.1
+@namespace      userstyles.world/user/boneyland
+@description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
+@author         boneyland
+@homepageURL    https://github.com/boneyland/instagram-userstyle
+@license        MIT
+@preprocessor   default
+
+@var select u-feed-sidebar       "Feed: the right-hand sidebar (your profile, the account switcher, suggestions)" {
+	"hidden:Hidden*": "none",
+	"shown:Shown":    "block"
+}
+@var select u-slide-counter      "Carousels: a slide counter (3/7) over the media" {
+	"hidden:Hidden*": "none",
+	"shown:Shown":    "block"
+}
+@var range  u-feed-width         "Feed: feed width, as a % of the window"                               [90, 30, 100, 1]
+@var range  u-feed-min           "Feed: minimum feed width in pixels"                                   [780, 400, 1600, 10, "px"]
+@var range  u-media-column       "Feed: media width, as a % of feed width"                              [55, 20, 100, 1]
+@var range  u-caption-min        "Feed: minimum width of caption column before it moves underneath"     [320, 150, 800, 10, "px"]
+@var range  u-media-max-height   "Feed: maximum height of a single photo or reel"                       [900, 300, 2000, 50, "px"]
+@var range  u-feed-reel-width    "Feed: maximum width of portrait reel"                                 [600, 300, 2000, 10, "px"]
+@var range  u-carousel-scale-max "Feed: scale carousels by a maximum of (1 = off)"                      [1.5, 1, 6, 0.1]
+@var range  u-text-size          "Text: font size of usernames, captions and comments"                  [14, 10, 24, 1, "px"]
+@var range  u-text-line-height   "Text: spacing between lines of that text"                             [18, 12, 36, 1, "px"]
+@var range  u-post-photo-width   "Reel/post pages: total width of photo/carousel and caption"           [1350, 400, 2000, 10, "px"]
+@var range  u-post-width         "Reel/post pages: total width of a portrait carousel and caption"      [1100, 400, 2000, 10, "px"]
+@var range  u-reel-width         "Reel/post pages: total width of a portrait reel and caption"          [950, 400, 2000, 10, "px"]
+@var range  u-reel-height        "Reel/post pages: maximum height of a portrait reel"                   [1000, 400, 2000, 10, "px"]
+@var range  u-reel-landscape     "Reel/post pages: total width of a square/landscape reel and caption"  [1500, 400, 2000, 10, "px"]
+@var range  u-reel-media-info    "Reel/post pages: width of the caption column"                         [380, 200, 800, 1, "px"]
+==/UserStyle== */
+
+@-moz-document domain("www.instagram.com") {
+
+	:root {
+		--u-media-px: calc(
+			(var(--u-media-column) / 100) *
+			max(var(--u-feed-min), var(--u-feed-width) * (100vw - 72px) / 100)
+			- 12px
+		);
+	}
+
+	article,
+	main,
+	[role="dialog"] {
+		--system-14-font-size: var(--u-text-size);
+		--system-14-line-height: var(--u-text-line-height);
+	}
+
+	main .xvs91rp,
+	[role="dialog"] .xvs91rp {
+		line-height: var(--system-14-line-height);
+	}
+
+	article ._aacl._aaco._aacu._aacx._aad7._aade,
+	article ._acan,
+	article .x1f6kntn {
+		font-size: var(--system-14-font-size);
+		line-height: var(--system-14-line-height);
+		overflow-wrap: anywhere;
+	}
+
+	.x6bx242 {
+		display: var(--u-feed-sidebar);
+	}
+
+	@media screen and (min-width: 800px) {
+
+		main > div:has(> div[style*="630px"]),
+		main > div:has(> div[style*="max-width"]) {
+			box-sizing: border-box;
+			padding-left: 72px;
+			justify-content: safe center;
+		}
+
+		main > div > div[style*="630px"],
+		main > div > div[style*="max-width"] {
+			min-width: var(--u-feed-min) !important;
+			width: calc(var(--u-feed-width) * 1%) !important;
+			max-width: none !important;
+		}
+
+		main [style*="--x-width"][style*="470px"],
+		.xmnaoh6 + div > div {
+			--x-width: 100% !important;
+			width: 100% !important;
+			max-width: 100% !important;
+		}
+
+		main div[style*="min(470px"]:not(li *):not(:has(ul)) {
+			width: 100% !important;
+			max-width: 100% !important;
+			min-width: min(468px, var(--u-media-px));
+		}
+
+		main div[style*="min(470px"]:not([style*="--x-width"]):has(ul) {
+			--u-carousel-scale: min(
+				var(--u-carousel-scale-max),
+				tan(atan2(var(--u-media-px), 468px))
+			);
+			zoom: var(--u-carousel-scale);
+		}
+
+		main > div > div > .xw7yly9 > div {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+
+		main > div > div > .xw7yly9 > div > div {
+			box-sizing: border-box;
+		}
+
+		main > div > div > .xw7yly9 > div > div:first-child {
+			flex: 100%;
+		}
+
+		article:not([role="dialog"] *) > .xdt5ytf:has(> div:nth-child(3)) {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			border-bottom: 1px solid rgb(var(--ig-separator));
+
+			> div {
+				box-sizing: border-box;
+				min-width: 0;
+			}
+
+			> div:nth-last-child(3) {
+				flex: 1 1 100%;
+			}
+
+			> div:nth-last-child(2) {
+				flex: 1 1 calc(var(--u-media-column) * 1%);
+				max-width: calc(var(--u-media-column) * 1%);
+			}
+
+			> div:last-child {
+				flex: 1 1 var(--u-caption-min);
+
+				.html-div:not(.x1nhvcw1) {
+					width: 100%;
+				}
+
+				> div {
+					padding: 0 10px;
+				}
+			}
+		}
+
+		article:has(a[href*="/reels/"]):not([role="dialog"] *) > .xdt5ytf {
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			align-items: flex-start;
+
+			> div:first-child {
+				flex: 1 1 calc(var(--u-media-column) * 1%);
+				max-width: calc(var(--u-media-column) * 1%);
+				min-width: 0;
+			}
+
+			> div:last-child {
+				flex: 1 1 var(--u-caption-min);
+				min-width: 0;
+				padding: 0 10px;
+			}
+		}
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:is([style*="padding-bottom:125%"], [style*="padding-bottom: 125%"]) {
+		max-width: var(--u-feed-reel-width);
+		margin-inline: auto;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:is([style*="padding-bottom:125%"], [style*="padding-bottom: 125%"])) {
+		max-width: min(
+			calc(var(--u-media-max-height) / 1.25),
+			calc(var(--u-feed-reel-width) * 16 / 9 / 1.25)
+		);
+		margin-inline: auto;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="padding-bottom:125%"]):not([style*="padding-bottom: 125%"]) {
+		padding-bottom: 0 !important;
+		height: auto !important;
+		width: fit-content !important;
+		margin-inline: auto;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="padding-bottom:125%"]):not([style*="padding-bottom: 125%"]) > div {
+		position: static !important;
+	}
+
+	article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="padding-bottom:125%"]):not([style*="padding-bottom: 125%"]) video {
+		position: static !important;
+		display: block;
+		width: auto !important;
+		height: auto !important;
+		max-width: 100% !important;
+		max-height: var(--u-media-max-height) !important;
+		object-fit: contain !important;
+		margin: 0 auto;
+	}
+
+	article:not([role="dialog"] *) img[aria-hidden="true"] {
+		display: none !important;
+	}
+
+	article:not([role="dialog"] *) a:has(div[style*="padding-bottom"]) {
+		display: block !important;
+		width: 100% !important;
+	}
+
+	article:not([role="dialog"] *) div[style*="padding-bottom"]:has(> img):not(li *) {
+		padding-bottom: 0 !important;
+		height: auto !important;
+		background: transparent !important;
+	}
+
+	article:not([role="dialog"] *) div[style*="padding-bottom"]:has(> img):not(li *) > img {
+		position: static !important;
+		display: block;
+		width: 100% !important;
+		height: auto !important;
+		max-height: var(--u-media-max-height) !important;
+		object-fit: contain !important;
+		margin: 0 auto;
+	}
+
+	div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"]) {
+		counter-reset: u-slide u-cur;
+		position: relative;
+	}
+
+	div:not([role="dialog"] *):has(> button[aria-current="step"]) > button {
+		counter-increment: u-slide u-cur;
+	}
+
+	div:not([role="dialog"] *):has(> button[aria-current="step"]) > button[aria-current="step"] ~ button {
+		counter-increment: u-slide;
+	}
+
+	div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])::after {
+		content: counter(u-cur) "/" counter(u-slide);
+		display: var(--u-slide-counter);
+		position: absolute;
+		bottom: calc(100% + 12px);
+		right: 12px;
+		z-index: 1;
+		padding: 3px 9px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: 600;
+		pointer-events: none;
+	}
+
+	@media screen and (min-width: 800px) {
+
+		div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])::after {
+			top: 12px;
+			bottom: auto;
+			right: calc(100% + 50% * var(--u-media-column) / max(1, 100 - var(--u-media-column)));
+			transform: translateX(50%);
+		}
+	}
+}
+
+@-moz-document regexp("https://www\\.instagram\\.com/(p|[^/]+/p|[^/]+/reel)/.*") {
+
+	main > div.xvc5jky:has(> div.xvc5jky) {
+		max-width: none;
+	}
+
+	:root:has(main div[style*="--x-maxWidth"] video) {
+		--media-info: var(--u-reel-media-info) !important;
+	}
+
+	main div[style*="--x-maxWidth"]:has(> div > div > div video) {
+		--x-maxWidth: min(100%, var(--u-reel-width),
+		calc(var(--u-reel-height) * 9 / 16 + var(--u-reel-media-info))) !important;
+	}
+
+	main > div > div.xvc5jky:has(li[style*="translateX"]) {
+		--media-info: var(--u-reel-media-info);
+	}
+
+	main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(li[style*="translateX"]) {
+		max-width: min(100%, var(--u-post-photo-width)) !important;
+	}
+
+	main > div > div.xvc5jky:not([style*="--x-maxWidth"]):has(video) {
+		--media-info: var(--u-reel-media-info);
+		max-width: min(100%, var(--u-reel-landscape)) !important;
+	}
+
+	main div[style*="--x-maxWidth"]:has(li[style*="translateX"]) {
+		--x-maxWidth: min(100%, var(--u-post-width)) !important;
+	}
+
+	main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)) {
+		--media-info: var(--u-reel-media-info) !important;
+	}
+
+	main > div > div.xvc5jky:has(div[style*="padding-bottom"] > img):not(:has(li[style*="translateX"])):not(:has(video)):has(div[style*="padding-bottom:1"] > img, div[style*="padding-bottom: 1"] > img) {
+		max-width: min(100%, var(--u-post-photo-width)) !important;
+	}
+
+	div:has(> div > ._acnb) {
+		counter-reset: u-slide u-cur;
+	}
+
+	div:has(> ._acnb) > ._acnb {
+		counter-increment: u-slide u-cur;
+	}
+
+	div:has(> ._acnb) > ._acnf ~ ._acnb {
+		counter-increment: u-slide;
+	}
+
+	div:has(> div > ._acnb)::after {
+		content: counter(u-cur) "/" counter(u-slide);
+		display: var(--u-slide-counter);
+		position: absolute;
+		bottom: 12px;
+		right: 12px;
+		z-index: 1;
+		padding: 3px 9px;
+		border-radius: 999px;
+		background: rgba(0, 0, 0, 0.6);
+		color: #fff;
+		font-size: 12px;
+		line-height: 15px;
+		font-weight: 600;
+		pointer-events: none;
+	}
+}
