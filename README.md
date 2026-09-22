@@ -28,7 +28,7 @@ Published to [userstyles.world](https://userstyles.world/style/30052/instagram-d
 
 To install this copy instead, open `Instagram.user.css` raw and Stylus will intercept it. Stylus takes that raw URL as the style's update URL, so an install from here follows `main` — which may be ahead of the published version — rather than userstyles.world.
 
-## Coverage matrix — page × media shape (New, 17 Sep 2026)
+## Coverage matrix — page × media shape
 
 | Page / modal                                              | URL shape                                               | Single photo                       | Carousel                        | Reel                                        |
 | --------------------------------------------------------- | ------------------------------------------------------- | ---------------------------------- | ------------------------------- | ------------------------------------------- |
