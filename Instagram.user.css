@@ -31,7 +31,7 @@
 @var range  u-reel-height        "Reel/post pages: maximum height of a portrait reel"                   [1000, 400, 2000, 5, "px"]
 @var range  u-reel-landscape     "Reel/post pages: total width of a square/landscape reel and caption"  [1500, 400, 2000, 5, "px"]
 @var range  u-reel-media-info    "Reel/post pages: width of the caption and comment column"             [380, 200, 800, 5, "px"]
-@var range  u-modal-caption      "Post modal: width of the caption and comment column"                  [350, 220, 700, 5, "px"]
+@var range  u-modal-caption      "Post modal: width of the caption and comment column"                  [400, 220, 700, 5, "px"]
 ==/UserStyle== */
 
 @-moz-document domain("www.instagram.com") {

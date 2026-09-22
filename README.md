@@ -70,7 +70,7 @@ Eighteen, all exposed through the Stylus settings pane.
 | Reel/post pages: maximum height of a portrait reel | 1000px |
 | Reel/post pages: total width of a square/landscape reel and caption | 1500px |
 | Reel/post pages: width of the caption and comment column | 380px |
-| Post modal: width of the caption and comment column | 350px |
+| Post modal: width of the caption and comment column | 400px |
 
 On the reel and post pages nothing is sized directly. Every width setting there caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
 
@@ -85,7 +85,7 @@ The post modal — a post or reel opened in a floating panel by clicking it in t
 - **A portrait reel that is not 9:16 is sized conservatively.** The height setting works out the column a 9:16 video would need, so a shallower portrait reel comes out under its height budget rather than filling it — a 3:4 reel reaches roughly three quarters of the height you set. Landscape reels and 9:16 reels are both exact. It is never sized the wrong way, only short.
 - **A portrait reel shallower than 9:16 is cropped left and right in the feed.** Instagram flattens everything taller than 4:5 into one box and crops it to fill, so a 3:4 or 4:5 reel arrives indistinguishable from a 9:16 one and is treated as 9:16 — which costs some of its width at the default, and even more once the width setting is low enough to make the box a true 9:16. 3:4 and 4:5 reels are rare, but they are real. The trade is deliberate: giving a tall reel back its height is the same operation as taking the sides off a shorter one, and nothing on the page distinguishes them. A 9:16 reel is never side-cropped at any setting.
 - **The slide counter does not appear when the post is stacked rather than two columns.** The counter is positioned across from the dots onto the media, and that only works while the caption sits beside the media. When the window is too narrow to give the caption its minimum width — or when the media column is set wide enough to squeeze it — the caption drops below the media instead, and the counter goes off-screen rather than moving with it. It is absent, not misplaced: nothing appears in the wrong place. The two layouts need opposite anchors and CSS cannot tell them apart, so this is a deliberate trade rather than an oversight.
-- **`/reels/<id>/` and the floating reel dialog are deliberately untouched.** Both are modals with their own markup, which these rules would not transfer to unchanged.
+- **`/reels/<id>/` is deliberately untouched.** It is a modal with its own markup, which these rules would not transfer to unchanged. The floating reel dialog at `/reel/<id>/` gets the caption and comment column setting and nothing else, for the same reason.
 
 ## Repository layout
 

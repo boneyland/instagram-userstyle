@@ -8,7 +8,7 @@ Two changes: a new setting for the caption and comment column of a post or reel 
 
 ### The post and reel modal caption column is adjustable
 
-New setting, **Post modal: width of the caption and comment column**, default 350px. It pins the right-hand column of a post or a reel opened in a floating panel -- by clicking a post in the feed, or reaching one from a profile grid.
+New setting, **Post modal: width of the caption and comment column**, default 400px. It pins the right-hand column of a post or a reel opened in a floating panel -- by clicking a post in the feed, or reaching one from a profile grid.
 
 **Prompted by a use the style was not designed for.** The user disabled Instagram's Android app handler and opened the site in Firefox with desktop mode, where the style turns out to work decently on a phone -- except that the modal's caption column is far too wide for the window. Nothing in the change is mobile-specific and it takes no media query: the column is one width on every screen, and the setting is the same control everywhere.
 
