@@ -1,4 +1,4 @@
-Rebuilds Instagram's desktop layout around the media instead of a fixed 470px column: posts become two columns, photos are shown uncropped, and carousels and reels are enlarged to fill the space that gains.
+Rebuilds Instagram's desktop layout around the media instead of a fixed 470px column: posts become two columns — media beside its caption and comments — photos are shown uncropped rather than boxed and blurred, and carousels and reels are enlarged to fill the space that gains. It covers the feed, post and reel pages, and a post or reel opened in a floating modal, and everything it resizes is adjustable: layout widths, media size caps, the caption column, font size and line spacing, plus an optional slide counter on carousels and a switch to bring back the hidden sidebar.
 
 **[Full documentation, the settings table and the complete changelog are on GitHub.](https://github.com/boneyland/instagram-userstyle)** The following is a summary.
 
