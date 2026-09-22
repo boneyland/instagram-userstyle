@@ -43,9 +43,9 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 
 ✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ the caption column is adjustable; no setting controls the media width, it takes whatever the caption leaves  ·  — shape cannot reach that URL
 
-On the four modal rows ⭕ means the caption and comment column setting, which is the only thing that reaches a modal — plus the slide counter on a modal carousel. The media then takes whatever width the caption gives up, until it reaches the cap Instagram derives from the window height. On a tall narrow window that cap is never reached, so every pixel taken off the caption goes to the media; on a short wide one it is reached early and narrowing further buys nothing.
+On the three modal rows ⭕ means the caption and comment column setting, which is the only thing that reaches a modal — plus the slide counter on a modal carousel. The media then takes whatever width the caption gives up, until it reaches the cap Instagram derives from the window height. On a tall narrow window that cap is never reached, so every pixel taken off the caption goes to the media; on a short wide one it is reached early and narrowing further buys nothing.
 
-More about ⭕: They get everything else the style does: the width ceiling Instagram puts on the post column is lifted, so the media grows with the window, and the caption column, font size and line spacing settings all apply. They have no width cap of their own because they do not need one — a landscape photo already sits comfortably within the viewport, and capping it would only make it smaller.
+On the permalink row ⭕ means something different: a landscape photo, which gets everything else the style does — the width ceiling Instagram puts on the post column is lifted, so the photo grows with the window, and the caption column, font size and line spacing settings all apply. It has no width cap of its own because it does not need one: it already sits comfortably within the viewport, and capping it would only make it smaller.
 
 ## Settings
 
