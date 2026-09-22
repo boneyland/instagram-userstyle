@@ -4,11 +4,11 @@
 
 Compared against `2026.9.21.1`, kept as `Instagram-20260921-uploaded.user.css`.
 
-One change: a new setting for the caption and comment column of a post opened as a modal. One rule, one setting, and no change to any page that is not a modal.
+Two changes: a new setting for the caption and comment column of a post or reel opened as a modal, and a retune of several settings' defaults and step sizes. One new rule, and no change to any page that is not a modal.
 
-### The post modal's caption column is adjustable
+### The post and reel modal caption column is adjustable
 
-New setting, **Post modal: width of the caption and comment column**, default 400px. It pins the right-hand column of a post opened in a floating panel -- by clicking a post in the feed, or reaching a `/p/<id>/` URL from a profile grid.
+New setting, **Post modal: width of the caption and comment column**, default 350px. It pins the right-hand column of a post or a reel opened in a floating panel -- by clicking a post in the feed, or reaching one from a profile grid.
 
 **Prompted by a use the style was not designed for.** The user disabled Instagram's Android app handler and opened the site in Firefox with desktop mode, where the style turns out to work decently on a phone -- except that the modal's caption column is far too wide for the window. Nothing in the change is mobile-specific and it takes no media query: the column is one width on every screen, and the setting is the same control everywhere.
 
@@ -18,7 +18,7 @@ New setting, **Post modal: width of the caption and comment column**, default 40
 
 **The range stops at 220, not 200, and the reason is content rather than layout.** At 200 a single un-wrappable link about 142px wide still overflows by roughly nine on the single-photo modal, while the carousel modal is clean at the same setting. A longer username would reach further, so no fixed minimum is provably safe for every post; 220 is where both captures are clean with margin.
 
-The rule is `div[role="dialog"] article div[style*="--x-maxWidth"] > div + div`, in the `regexp()` post block -- opening a post as a modal changes the URL to `/p/<id>/`, so that block already owns the page, the same way it already owns a modal carousel's slide counter. It needs no `!important`: at (0,2,5) against Instagram's (0,1,0) it wins on specificity alone.
+The rule is `div[role="dialog"] article div[style*="--x-maxWidth"] > div + div`, and it sits in the **`domain()`** block rather than the post block. A post modal would have been reachable either way, since opening one changes the URL to `/p/<id>/` -- but a **reel** modal is served at the bare `/reel/<id>/`, which the post block's pattern deliberately does not match, and widening that pattern would have dragged every other post rule onto a dialog layout none of them was measured against. Scoping site-wide costs nothing because the selector is already exact: 1 on each of the four modal captures, 0 on the other eighteen. It needs no `!important` either -- at (0,2,5) against Instagram's (0,1,0) it wins on specificity alone.
 
 **The `[role="dialog"]` scope is load-bearing.** Without it the same selector matches 1 element on each of the three feed captures and 2 on `Instagram_post_modal_over_feed.html`. With it, 1 on each of the three modal captures and 0 on the other eighteen.
 
@@ -27,6 +27,10 @@ The obvious hook -- `.x65f84u.x1vq45kp`, the two atoms that carry the bounds -- 
 Measured across all twenty-one snapshots at the default: standard-property changes on exactly the three modal captures -- 204, 164 and 164 -- and 0 on the other eighteen, whose only difference is the new variable inheriting from `:root` without being read. On a modal, `max-width` goes 500px to 400px on one element and `min-width` 405px to 400px on two -- the column and that inner wrapper -- with `--media-info` following through the subtree and about 38 descendant widths moving with it. No `font-size`, no `line-height`, no `zoom` anywhere.
 
 The media side of this is not measurable offline: SingleFile froze the JS-written inline sizes, and all three captures carry the identical `flex-basis:925px`, so the corpus cannot show that figure responding to anything. It was checked live instead, which is also where the 335px floor came from. `docs/rule-notes-post.md` records both, and what remains unverified.
+
+### Retuned defaults and finer steps
+
+The carousel slide counter is now **shown by default** rather than hidden. Most pixel settings moved to a step of 5 rather than 10, and the reel/post caption column from 1 to 5, so the sliders are finer where it matters and coarser where single pixels never did. `Reel/post pages: width of the caption column` is relabelled "caption and comment column" to match the modal setting.
 
 ## 2026.9.21.1
 

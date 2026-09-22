@@ -35,13 +35,15 @@ To install this copy instead, open `Instagram.user.css` raw and Stylus will inte
 | **Feed**                                                  | `/`                                                     | ✅any ratio                         | ✅ any ratio                     | ✅ 125% box (4:5, 3:4, 9:16), 4:3, 16:9, 1:1, 3:2 |
 | **Post / reel permalink**                                 | `/p/<id>/`<br>`/<user>/p/<id>/`<br>`/<user>/reel/<id>/` | ✅1:1, 3:4, 4:5 <br>⭕4:3, 16:9, 3:2 | ✅ 1:1, 16:9, 4:5, 3:4, 4:3, 3:2 | ✅1:1, 9:16, 4:5, 4:3, 16:9, 3:2, 3:4     |
 | **Reels, plural path**                                    | `/reels/<id>/`                                          | —                                  | —                               | ❌                                           |
-| **Reel floating dialog**                                  | `/reel/<id>/`                                           | —                                  | —                               | ❌                                           |
-| **Post modal over profile grid**                          | `/p/<id>/`                                              | ❌                                  | ❌                               | ❌                                           |
-| **Post modal over feed**                                  | `/p/<id>/`                                              | ❌                                  | ❌                               | ❌                                           |
+| **Reel floating dialog**                                  | `/reel/<id>/`                                           | —                                  | —                               | ⭕                                           |
+| **Post modal over profile grid**                          | `/p/<id>/`                                              | ⭕                                  | ⭕                               | ⭕                                           |
+| **Post modal over feed**                                  | `/p/<id>/`                                              | ⭕                                  | ⭕                               | ⭕                                           |
 | **Grid pages** (profile, explore, hashtag, saved, tagged) | various                                                 | — thumbnails only                  | —                               | —                                           |
 | **Stories**                                               | `/stories/...`                                          | —                                  | —                               | —                                           |
 
-✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ caption column widened; no setting controls the media width, it takes what the caption leaves  ·  — shape cannot reach that URL
+✅ styled  ·  ❌  nothing except font size and line spacing works here  ·  ⭕ the caption column is adjustable; no setting controls the media width, it takes whatever the caption leaves  ·  — shape cannot reach that URL
+
+On the four modal rows ⭕ means the caption and comment column setting, which is the only thing that reaches a modal — plus the slide counter on a modal carousel. The media then takes whatever width the caption gives up, until it reaches the cap Instagram derives from the window height. On a tall narrow window that cap is never reached, so every pixel taken off the caption goes to the media; on a short wide one it is reached early and narrowing further buys nothing.
 
 More about ⭕: They get everything else the style does: the width ceiling Instagram puts on the post column is lifted, so the media grows with the window, and the caption column, font size and line spacing settings all apply. They have no width cap of their own because they do not need one — a landscape photo already sits comfortably within the viewport, and capping it would only make it smaller.
 
@@ -51,7 +53,7 @@ Eighteen, all exposed through the Stylus settings pane.
 
 | Setting | Default |
 | --- | --- |
-| Carousels: a slide counter (3/7) over the media | Hidden |
+| Carousels: a slide counter (3/7) over the media | Shown |
 | Feed: the right-hand sidebar (your profile, the account switcher, suggestions) | Hidden |
 | Feed: feed width, as a % of the window | 90% |
 | Feed: minimum feed width in pixels | 780px |
@@ -67,8 +69,8 @@ Eighteen, all exposed through the Stylus settings pane.
 | Reel/post pages: total width of a portrait reel and caption | 950px |
 | Reel/post pages: maximum height of a portrait reel | 1000px |
 | Reel/post pages: total width of a square/landscape reel and caption | 1500px |
-| Reel/post pages: width of the caption column | 380px |
-| Post modal: width of the caption and comment column | 400px |
+| Reel/post pages: width of the caption and comment column | 380px |
+| Post modal: width of the caption and comment column | 350px |
 
 On the reel and post pages nothing is sized directly. Every width setting there caps the column that holds the media and its caption, and the media takes whatever the caption column leaves it — which is why the caption width belongs in the same group rather than being a separate concern.
 
@@ -76,7 +78,7 @@ The two portrait-reel settings bound the same thing from different directions, a
 
 The feed settings are more literal. The media column is set as a share of the feed width and the caption column takes what is left, and the two caps on feed media — maximum width of portrait reel, maximum height of a single photo or reel — bound the media element itself rather than a column around it.
 
-The post modal — a post opened in a floating panel by clicking it in the feed or reaching it from a profile grid — is sized by Instagram rather than by the page settings above, so its caption and comment column has a setting of its own. Unlike the others it is a fixed width rather than a cap: the column is exactly what you set at every window size, and the media beside it grows into whatever the column gives up. Stock behaviour is a column that drifts between 405px and 500px depending on the space available, so the setting is mostly useful for narrowing it — which is what makes the modal usable in a narrow window, such as a phone browser in desktop mode. It stops at 220px because below roughly that a long username in the comments has nowhere left to wrap.
+The post modal — a post or reel opened in a floating panel by clicking it in the feed or reaching it from a profile grid — is sized by Instagram rather than by the page settings above, so its caption and comment column has a setting of its own. Unlike the others it is a fixed width rather than a cap: the column is exactly what you set at every window size, and the media beside it grows into whatever the column gives up. Stock behaviour is a column that drifts between 405px and 500px depending on the space available, so the setting is mostly useful for narrowing it — which is what makes the modal usable in a narrow window, such as a phone browser in desktop mode. It stops at 220px because below roughly that a long username in the comments has nowhere left to wrap.
 
 ## Known limitations
 

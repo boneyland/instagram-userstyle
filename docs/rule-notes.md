@@ -47,6 +47,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 - `article:not([role="dialog"] *) img[aria-hidden="true"]`
 - `article:not([role="dialog"] *) a:has(div[style*="padding-bottom"])`
 - the slide counter — `div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])` and its three companions
+- `div[role="dialog"] article div[style*="--x-maxWidth"] > div + div` — the post and reel modal caption column
 
 ### The `regexp()` post and reel block — `docs/rule-notes-post.md`
 
