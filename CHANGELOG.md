@@ -2,7 +2,7 @@
 
 ## 2026.9.22.1
 
-Compared against `2026.9.21.1`, kept as `Instagram-20260921-uploaded.user.css`.
+Compared against `2026.9.21.1`, tag `v2026.9.21.1`.
 
 Two changes: a new setting for the caption and comment column of a post or reel opened as a modal, and a retune of several settings' defaults and step sizes. One new rule, and no change to any page that is not a modal.
 
@@ -34,7 +34,7 @@ The carousel slide counter is now **shown by default** rather than hidden. Most 
 
 ## 2026.9.21.1
 
-Compared against `2026.9.17.1`, kept as `Instagram-20260917-uploaded.user.css`.
+Compared against `2026.9.17.1`, tag `v2026.9.17.1`.
 
 Two changes: a fix for feed carousels going blank after viewing stories, and a new optional slide counter on carousels. The fix is one declaration and is on by default because it repairs a defect this style introduced; the counter is eight rules behind a setting that starts hidden, so a fresh install sees no change from it at all.
 
@@ -72,7 +72,7 @@ The total is read from the dots Instagram renders, one per slide. That was check
 
 ## 2026.9.17.1
 
-Compared against `2026.9.14.1`, kept as `Instagram-20260914-uploaded.user.css`.
+Compared against `2026.9.14.1`, tag `v2026.9.14.1`.
 
 Instagram capped the post page at its 935px site width, which pinned every no-token shape there and left the width settings working downwards only; the one rule added here lifts that cap, and it is the only change that moves pixels. Two labels widen to name shapes the rules always covered but no snapshot holds -- a square reel and a 4:5 carousel, each confirmed on the live site rather than in a capture. Three defaults were also retuned by eye. No existing rule is changed and no setting is added or removed, and no saved value is affected -- a default is only what a fresh install starts from.
 
@@ -140,7 +140,7 @@ Still sixteen.
 
 ## 2026.9.14.1
 
-Compared against `2026.9.12.4`, kept as `Instagram-20260912.4-uploaded.user.css` -- so this entry is the whole of what an installer receives.
+Compared against `2026.9.12.4`, tag `v2026.9.12.4` -- so this entry is the whole of what an installer receives.
 
 A release about **labels that claimed more than they governed**, and the one setting that genuinely governed too much. Three labels were reported as misleading, each in the same way: the label named a category and the rule behind it covered a subset. In two cases the label was narrowed to the rule; in the third the rule was split so a label could be true of each half. No shape lost its sizing, and one gained a setting of its own.
 
@@ -184,7 +184,7 @@ The landscape feed reel's width cap, recorded in `docs/removed.md` with its meas
 
 ## 2026.9.12.4
 
-Compared against `2026.9.12.1`, which was published to userstyles.world earlier the same day and is kept as `Instagram-20260912.1-uploaded.user.css` -- so this entry is the whole of what an installer receives. `2026.9.12.2` and `2026.9.12.3` were unpublished working steps and are covered here rather than kept as entries of their own. The `2026.9.12.1` entry below remains the cumulative comparison against `20260910` for anyone updating from further back.
+Compared against `2026.9.12.1`, which was published to userstyles.world earlier the same day and is tag `v2026.9.12.1` -- so this entry is the whole of what an installer receives. `2026.9.12.2` and `2026.9.12.3` were unpublished working steps and are covered here rather than kept as entries of their own. The `2026.9.12.1` entry below remains the cumulative comparison against `2026.9.10` for anyone updating from further back.
 
 ### Reels on the post and reel pages now respond to both settings, at every shape
 

@@ -92,7 +92,8 @@ The post modal — a post or reel opened in a floating panel by clicking it in t
 | Path | Role |
 | --- | --- |
 | `Instagram.user.css` | The style. The deliverable. |
-| `Instagram-2026*-uploaded.user.css` | Previously published versions, kept for diffing. |
+| tags `v2026.9.12.1` … | Every published version is a git tag on the commit it shipped from. `git show v2026.9.22.1:Instagram.user.css` retrieves one. |
+| `Instagram-20260907-uploaded.user.css`, `Instagram-20260910-uploaded.user.css` | The two releases that predate this repository, kept as files because no commit holds them. |
 | `CHANGELOG.md` | Release notes per version. Earlier releases in `docs/changelog-archive.md`. |
 | `docs/removed.md` | Why something is **not** in the style, by subject, with the evidence. |
 | `USw-notes.md` | The user-facing changelog, for the Notes field on userstyles.world. |
