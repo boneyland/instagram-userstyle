@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026.9.24.1
+
+Compared against `2026.9.22.1`, tag `v2026.9.22.1`.
+
+One change: the post and reel modal caption rule now applies only in a viewport 800px wide or more. No rule was added or removed, and no selector or value changed.
+
+### The modal caption column no longer breaks narrow modals
+
+`div[role="dialog"] article div[style*="--x-maxWidth"] > div + div` shipped in `2026.9.22.1` with no media query, so it pinned the column to `--u-modal-caption` at every width. **Reported from the live site:** below 800px it wrecks Instagram's default post and reel modals. This was seen in a narrow window on a desktop computer, and on a phone sending a desktop user agent with desktop mode off. The rule now sits in the `domain()` block's second `@media screen and (min-width: 800px)` group, beside the slide-counter re-anchor. 800px is the breakpoint the rest of the block already uses, not a threshold measured for the modal.
+
+**Confirmed live on 2026-09-24.** Below 800px, both modal types keep Instagram's stock caption column and ignore the setting. On a phone in desktop mode, the case the setting was added for, the setting still drives the column.
+
+Measured against `v2026.9.22.1`: `verify.py` reports the feed computationally identical, and `scoped.py --diff` over the four modal captures shows 0 standard and 0 custom differences on each at the harness's 1638px viewport. Nothing offline renders below 800px, so the narrow case rests on the live check alone. `docs/rule-notes-feed.md` has the note.
+
 ## 2026.9.22.1
 
 Compared against `2026.9.21.1`, tag `v2026.9.21.1`.

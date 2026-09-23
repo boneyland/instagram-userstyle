@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.22.1
+@version        2026.9.24.1
 @namespace      userstyles.world/user/boneyland
 @description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column on post pages and in the post modal, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
 @author         boneyland
@@ -263,13 +263,13 @@
 		pointer-events: none;
 	}
 
-	div[role="dialog"] article div[style*="--x-maxWidth"] > div + div {
-		--media-info: var(--u-modal-caption);
-		min-width: var(--u-modal-caption);
-		max-width: var(--u-modal-caption);
-	}
-
 	@media screen and (min-width: 800px) {
+
+		div[role="dialog"] article div[style*="--x-maxWidth"] > div + div {
+			--media-info: var(--u-modal-caption);
+			min-width: var(--u-modal-caption);
+			max-width: var(--u-modal-caption);
+		}
 
 		div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])::after {
 			top: 12px;
