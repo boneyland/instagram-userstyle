@@ -263,13 +263,16 @@
 		pointer-events: none;
 	}
 
-	@media screen and (min-width: 800px) {
+	@media screen and (min-width: 736px) {
 
 		div[role="dialog"] article div[style*="--x-maxWidth"] > div + div {
 			--media-info: var(--u-modal-caption);
 			min-width: var(--u-modal-caption);
 			max-width: var(--u-modal-caption);
 		}
+	}
+
+	@media screen and (min-width: 800px) {
 
 		div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])::after {
 			top: 12px;
