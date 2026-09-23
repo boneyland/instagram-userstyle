@@ -12,9 +12,9 @@ One change: the post and reel modal caption rule now applies only in a viewport 
 
 **Below 736px there is no caption column to size.** The user found live that at `max-width:735px` Instagram turns the modal single-column with no comments shown. Both numbers, `max-width:735px` and `min-width:736px`, appear as media queries in every modal capture. The rule now sits in a `@media screen and (min-width: 736px)` block of its own in the `domain()` block. Instagram's other nearby breakpoints were checked live and are not the modal's: 767/768px changes the sidebar and header, and 875/876px showed no visible change.
 
-It was first gated at 800px, the breakpoint the rest of the block uses, and that was confirmed live: below 800 both modal types kept the stock column, and a phone in desktop mode, the case the setting was added for, still took it. It moved to 736 the same day, because 800 withheld the setting from 736-799px, where the modal is still two columns. **The 736-799px range has not been checked live at the new gate.**
+It was first gated at 800px, the breakpoint the rest of the block uses, and that was confirmed live: below 800 both modal types kept the stock column, and a phone in desktop mode, the case the setting was added for, still took it. It moved to 736 the same day, because 800 withheld the setting from 736-799px, where the modal is still two columns. **Confirmed live at the new gate on 2026-09-24:** from 736 to 799px both modal types take the setting, and below 736 they keep Instagram's single-column layout.
 
-Measured against `v2026.9.22.1`: `verify.py` reports the feed computationally identical, and `scoped.py --diff` over the four modal captures shows 0 standard and 0 custom differences on each at the harness's 1638px viewport. Nothing offline renders below 736px, so the narrow case rests on the live checks alone. `docs/rule-notes-feed.md` has the note.
+Measured against `v2026.9.22.1`: `verify.py` reports the feed computationally identical, and `scoped.py --diff` over the four modal captures shows 0 standard and 0 custom differences on each at the harness's 1638px viewport. Nothing offline renders below 736px, so the narrow case rests on the live checks. `docs/rule-notes-feed.md` has the note.
 
 ## 2026.9.22.1
 
