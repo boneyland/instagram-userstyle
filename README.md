@@ -118,4 +118,4 @@ python3 scoped.py --diff old.user.css new.user.css     # every snapshot, at its 
 
 ## License
 
-MIT.
+This project is licensed under GNU GENERAL PUBLIC LICENSE Version 3.
