@@ -11,3 +11,5 @@ Instagram_snapshots/
 # Machine-specific, so a clone does not get the shipping-a-release checklist;
 # CLAUDE.md records that it lives here and points at the last tracked copy.
 .claude/
+
+.vscode/
