@@ -5,7 +5,7 @@
 @description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column on post pages and in the post modal, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
 @author         boneyland
 @homepageURL    https://github.com/boneyland/instagram-userstyle
-@license        MIT
+@license        GNU GPLv3
 @preprocessor   default
 
 @var select u-feed-sidebar       "Feed: the right-hand sidebar (your profile, the account switcher, suggestions)" {
