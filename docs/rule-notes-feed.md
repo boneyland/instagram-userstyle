@@ -238,7 +238,9 @@ Anchoring to the property name and the whole value fixes both halves at once, an
 
 ## Media (section header)
 
-Images: Instagram reserves space with a `padding-bottom: <percent>` box and absolutely positions the image inside it with object-fit: cover. Collapsing the box and letting the image size itself removes both the crop and the letterboxing.
+Images: Instagram reserves space with a `padding-bottom: <percent>` box and absolutely positions the image inside it with object-fit: cover. Collapsing the box and letting the image size itself is what lets the height setting apply to a photo -- see the last paragraph of this section.
+
+It does **not** fix a crop, and nothing user-facing should say it does. This note used to claim it "removes both the crop and the letterboxing", and `USw-notes.md` and `README.md` repeated that as photos losing a "crop-to-fill box" and a "blurred plate". On 2026-09-30 the user reported that stock Instagram shows single feed photos in full, with no crop, blurred plate or black background. The snapshots agree: the box's percentage is computed from the photo's own pixel dimensions (`68.125%` is exactly `109/160`), so the box already has the photo's shape and `object-fit: cover` has nothing visible to trim.
 
 Video boxes are never collapsed. A <video preload="none"> has no intrinsic dimensions until its metadata loads, so a collapsed box gives it zero height, and with nothing rendered it never loads -- reels disappear entirely. They keep Instagram's box and are only re-fitted inside it.
 
@@ -253,7 +255,11 @@ All four are guarded, not just the one carrying the height cap. They are one pip
 
 ## `article:not([role="dialog"] *) img[aria-hidden="true"]`
 
-blurred/black plate drawn behind non-filling media
+INHERITED, POSSIBLY STALE. The only record of why this rule exists is the comment it carried in the first published version: "blurred/black plate drawn behind non-filling media". Nothing on today's feed matches that description.
+
+Checked on 2026-09-30 against all three feed snapshots: the rule matches 1, 2 and 5 images, and **every one is inside a reel's `aria-label="Video player"` overlay** -- the reel's thumbnail, styled `object-fit: cover` (`.xl1xv1r`) with no filter. None sits behind a single photo, and the only `blur()` in any saved feed CSS is a `backdrop-filter` on an unrelated class. The user confirmed live that single photos have no plate behind them. So the rule currently hides reel thumbnails, not a plate.
+
+SingleFile prunes unused CSS, so a blur that exists only live cannot be ruled out offline. What hiding the thumbnail does to a feed reel before it plays is untested. Measure that live before deleting the rule or changing its selector.
 
 
 ## `article:not([role="dialog"] *) a:has(div[style*="padding-bottom"])`
