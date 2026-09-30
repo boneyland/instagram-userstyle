@@ -82,10 +82,17 @@ Measured on the saved feed at a 1638px window, feed width 100 and media column 1
 The feed column. max-width is not a cap -- it exists solely to defeat the inline max-width Instagram sets on this element. The width above is what governs.
 
 
-## `main [style*="--x-width"][style*="470px"], .xmnaoh6 + div > div`
+## `main [style*="--x-width"][style*="470px"]`
 
 Post column inside the feed column.
 
+**What it actually protects, measured 2026-09-30: the feed behind a post modal.** Both selectors match the same single element on every feed capture, the post column carrying inline `--x-maxWidth:100%;--x-width:min(470px,100vw)`. On a plain feed URL, deleting either selector or both moves nothing. The feed rules below widen that column on their own.
+
+It matters once a post is opened as a modal over the feed. The URL becomes `/p/<id>/`, so the `regexp()` post block applies to the feed still rendered behind the dialog. One of its rules, `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])`, then matches **this feed column**, not anything in the dialog, because the column carries an inline `--x-maxWidth` and contains a carousel. It sets `--x-maxWidth: min(100%, var(--u-post-width))`. This rule's `max-width: 100% !important` is what cancels that. On `Instagram_post_modal_over_feed.html`, at its own URL with both blocks applied, removing both selectors moved 1144 elements, feed posts shrinking from 10662px to 10274px tall at the top. Removing either one alone moved nothing. The user saw the feed behind the modal visibly move live with the rule removed.
+
+**Trimmed to the attribute selector on 2026-09-30.** It was `main [style*="--x-width"][style*="470px"], .xmnaoh6 + div > div`, and the two halves matched the same element on every feed capture. Removing either alone moved nothing, so the class-based half was dropped. The attribute half keys on Instagram's inline style rather than a generated class name, and its `470px` prefix stops before the whitespace ambiguity. `docs/removed.md` has the entry.
+
+The five words above were the inherited explanation. The leak is the reason the rule cannot go. The same post block's `:root:has(main div[style*="--x-maxWidth"] video)` also matches on that page, as `CLAUDE.md` warns it matches on the feed.
 
 ## `main div[style*="min(470px"]:not(li *):not(:has(ul))`
 
@@ -141,9 +148,9 @@ What the ceiling is actually for is user preference: it is a "never enlarge by m
 So the principle, for any zoom added here later: **check how the slide's width is written before reaching for zoom.** If it is a CSS expression, as on the feed, zoom scales it and nothing fights back. If it is a literal px derived from the container, as on a post page, then resizing that container makes Instagram recompute the slide and the zoom buys nothing. Both halves were measured live on 2026-09-11, the feed half by reading the attribute in DevTools.
 
 
-## `main > div > div > .xw7yly9 > div`
+## `main > div > div > .xw7yly9 > div` and its two companions (removed 2026-09-30)
 
-Stories tray spans the full width.
+Removed. The inherited note said "Stories tray spans the full width", but the tray's container has a single child that already spans it, and removing all three rules changed nothing on any feed capture or live. `docs/removed.md` has the evidence.
 
 
 ## `article:not([role="dialog"] *) > .xdt5ytf:has(> div:nth-child(3))`

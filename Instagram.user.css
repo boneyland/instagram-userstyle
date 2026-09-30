@@ -82,8 +82,7 @@
 			max-width: none !important;
 		}
 
-		main [style*="--x-width"][style*="470px"],
-		.xmnaoh6 + div > div {
+		main [style*="--x-width"][style*="470px"] {
 			--x-width: 100% !important;
 			width: 100% !important;
 			max-width: 100% !important;
@@ -101,20 +100,6 @@
 				tan(atan2(var(--u-media-px), 468px))
 			);
 			zoom: var(--u-carousel-scale);
-		}
-
-		main > div > div > .xw7yly9 > div {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-		}
-
-		main > div > div > .xw7yly9 > div > div {
-			box-sizing: border-box;
-		}
-
-		main > div > div > .xw7yly9 > div > div:first-child {
-			flex: 100%;
 		}
 
 		article:not([role="dialog"] *) > .xdt5ytf:has(> div:nth-child(3)) {

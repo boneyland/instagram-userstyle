@@ -30,10 +30,10 @@ Within each file, sections are in the order the rules appear in the style. A hea
 - `.x6bx242`
 - `main > div:has(> div[style*="630px"]), main > div:has(> div[style*="max-width"])`
 - `main > div > div[style*="630px"], main > div > div[style*="max-width"]`
-- `main [style*="--x-width"][style*="470px"], .xmnaoh6 + div > div`
+- `main [style*="--x-width"][style*="470px"]`
 - `main div[style*="min(470px"]:not(li *):not(:has(ul))`
 - `main div[style*="min(470px"]:not([style*="--x-width"]):has(ul)`
-- `main > div > div > .xw7yly9 > div`
+- `main > div > div > .xw7yly9 > div` and its two companions (removed 2026-09-30)
 - `article:not([role="dialog"] *) > .xdt5ytf:has(> div:nth-child(3))`
 - `> div:nth-last-child(3)`
 - `> div:nth-last-child(2)`

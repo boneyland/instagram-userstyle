@@ -112,6 +112,18 @@ It was `display: none !important`. Its only documentation was the comment it car
 
 ## Selectors and overrides
 
+### The stories tray rules, `main > div > div > .xw7yly9 > div` and its two companions — removed 2026-09-30, not yet released
+
+There were three rules. They made the tray's container (`.xmnaoh6`) a wrapping flex row with `display: flex; flex-direction: row; flex-wrap: wrap`, set `box-sizing: border-box` on its children, and set `flex: 100%` on the first child. Their only documentation was the comment from the first published version: "Stories tray spans the full width."
+
+**What they did.** On all four feed captures the tray container has exactly one child, the stories tray, at 1399x124. A lone child already spans the full width, so the three rules rebuilt the layout the page already had. The selector also matched two other `.xw7yly9` children. One is the post list, whose flex direction it flipped from `column` to `row`, harmless because the list has one child. The other, on the modal-over-feed capture, is an empty 0-height div. Removing all three rules moved 0 elements on every feed capture and on `Instagram_post_modal_over_feed.html` at its own URL, and the user saw no difference live. `verify.py` and `scoped.py --diff` report 14-16 standard-property differences per feed page, all of them the removed rules' own flex and `box-sizing` values and none a size or position. Removing only `flex: 100%` did move the tray, 7 elements, because the flex row was left in place and the tray shrank to its content. That is why the three have to be judged together. `flex-wrap` suggests the container once held more than one child, but that is inference, and nothing captured since 2026-09-09 shows it.
+
+**If the stories tray ever stops spanning the feed width**, check live how many children `.xmnaoh6` has before restoring these rules.
+
+### `.xmnaoh6 + div > div` — removed 2026-09-30, not yet released
+
+This was the second selector on the feed post-column rule, now `main [style*="--x-width"][style*="470px"]` alone. On every feed capture, and on the modal-over-feed capture, both selectors matched the same single element, the post column. At the modal's own `/p/<id>/` URL, where the rule is what stops the post block's carousel rule from capping the feed behind the dialog, removing either selector alone moved nothing, while removing both moved 1144 elements. The attribute selector was kept because it keys on Instagram's inline style rather than a generated class. **If the feed behind a post modal ever shrinks again**, check live whether that column still carries an inline `--x-width` with `470px` before restoring the class-based selector. `docs/rule-notes-feed.md` has the mechanism.
+
 ### `article ._aacl._aaco._aacu._aacx._aad7._aade` and `article ._acan` — removed 2026-09-30, not yet released
 
 These were two of the three selectors on the caption text rule, now `article .x1f6kntn` (font-size and line-height from the `--system-14-*` tokens, plus `overflow-wrap: anywhere`). A per-rule probe over all 23 snapshots found that neither class appears in any capture, feed or modal. The third selector matches only in the four modals. The rule's inherited purpose was to let feed captions break in the narrow column. The user checked that live with the whole rule removed and the feed caption column at 165px: captions still reflowed and long words still broke.
