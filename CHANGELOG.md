@@ -1,5 +1,34 @@
 # Changelog
 
+## 2026.9.30.1
+
+Compared against `2026.9.24.1`, tag `v2026.9.24.1`.
+
+A clean-up release: four rules deleted or trimmed because they had no visible effect, and a licence change. No setting was added, renamed or re-defaulted, and nothing that renders was meant to change. Every deletion and trim is recorded in `docs/removed.md` under its subject.
+
+### The licence is now GNU GPLv3
+
+`@license` changed from `MIT` to `GNU GPLv3`, with the full text in `LICENSE`. The change was already on userstyles.world before this release. Commit `f44d0fd` was pasted there on 2026-09-30 still carrying `@version 2026.9.24.1`, so installers were offered no update and the `v2026.9.24.1` tag, which says MIT, does not match what was live between that paste and this release.
+
+### Four rules with no effect, removed or trimmed
+
+The audit behind these was a per-rule probe over all 23 snapshots, each at its own URL. For every rule it counted the elements the rule matched and checked whether deleting that rule alone moved anything. The user then checked each candidate live.
+
+- **The "blurred plate" rule, `article:not([role="dialog"] *) img[aria-hidden="true"]`, is deleted.** It was inherited with the comment "blurred/black plate drawn behind non-filling media", and `README.md` and `USw-notes.md` repeated that as photos losing a blurred plate. The user reported that stock Instagram shows single feed photos in full with no plate. In every feed capture the rule matched only the thumbnail inside a reel's video player. Deleting it changed nothing live.
+- **The stories-tray rules, `main > div > div > .xw7yly9 > div` and its two companions, are deleted.** They made the tray's container a wrapping flex row and stretched its first child to full width. The container has one child, which already spans the width. Removing all three moved 0 elements on every feed capture and on the modal-over-feed capture, and nothing changed live.
+- **The feed post-column rule loses `.xmnaoh6 + div > div`**, leaving `main [style*="--x-width"][style*="470px"]`. Both selectors matched the same element. The rule itself is load-bearing in a way its old note did not say. Opening a post modal over the feed changes the URL to `/p/<id>/`, so the post block's `main div[style*="--x-maxWidth"]:has(li[style*="translateX"])` then caps the feed column behind the dialog, and this rule's `max-width: 100% !important` cancels that cap. The user saw the feed behind the modal move with the rule removed. `docs/rule-notes-feed.md` has the mechanism.
+- **The caption text rule loses `article ._aacl._aaco._aacu._aacx._aad7._aade` and `article ._acan`**, leaving `article .x1f6kntn`. Neither class appears in any capture. The rule matches nothing on the feed, where the user confirmed live that captions still wrap without it. It stays because `.x1f6kntn` carries the text-size setting to usernames in post and reel modals: with text size at 18, removing it dropped them to 14px offline, and the user confirmed that live.
+
+Measured: `verify.py Instagram.user.css` passes, with 48 rules and 207 declarations surviving parsing. Each change was checked on its own against the file just before it.
+
+- **The two selector trims:** `scoped.py --diff` shows 0 differences on every snapshot at its own URL. The 105MB `Instagram-p-id(carousel75).html` hit the memory floor on the caption-rule run. Neither dropped class occurs in that file, so the trim cannot reach it.
+- **The tray deletion:** `scoped.py --diff` differs only on the containers it matched, and only in flex and `box-sizing` values, none of them a size or position. A geometry check moved 0 elements on all four feed captures and on the modal-over-feed capture.
+- **The plate deletion:** `scoped.py --diff` from `f44d0fd` shows 55 standard-property differences on `Instagram_feed3.html` and `Instagram_feed4.html`, all of them `display: none -> block` and sizing on the five reel thumbnails each. The other 20 snapshots show 0. On `feed1` and `feed2` the thumbnails have an empty `src`, so un-hiding them changes nothing measurable. `carousel75` hit the memory floor, but it has no `<article>` and no `aria-hidden` image, so the rule cannot reach it.
+
+### Documentation
+
+`README.md` and `USw-notes.md` no longer say photos lose a crop-to-fill box or a blurred plate. Instagram's photo box already has the photo's own ratio, so there was no crop to remove. What the feed does to a single photo is size it to its own proportions under the height setting. The README's support table also lists the 2.25:1 reel ratio.
+
 ## 2026.9.24.1
 
 Compared against `2026.9.22.1`, tag `v2026.9.22.1`.

@@ -20,6 +20,7 @@ Chromium-based browsers are not restricted, and the style was confirmed working 
 
 ## What's new
 
-Since `2026.9.22.1`, the version published here before this one. [The full changelog, with the reasoning behind each change, is on GitHub.](https://github.com/boneyland/instagram-userstyle/blob/main/CHANGELOG.md)
+Since `2026.9.24.1`, the version published here before this one. [The full changelog, with the reasoning behind each change, is on GitHub.](https://github.com/boneyland/instagram-userstyle/blob/main/CHANGELOG.md)
 
-- **The post modal setting no longer breaks narrow windows.** Below 736px wide — a narrow desktop window, or a phone browser with desktop mode off — Instagram switches the modal to a single column, and the caption column setting squeezed it out of shape. It now applies only from 736px up, where the modal has a caption column, and below that the modal is left as Instagram draws it. A phone browser in desktop mode still takes the setting. Nothing else changes.
+- **Tidier, not different.** A few rules that no longer changed anything on today's Instagram have been removed or trimmed. Pages should look exactly as they did, and your settings are untouched.
+- **Licence is now GNU GPLv3**, replacing MIT.

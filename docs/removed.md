@@ -86,7 +86,7 @@ That ruling retired a README *Known limitations* bullet, deleted the same day, w
 
 **No height cap.** The tallest photo Instagram appears to accept is the 133.333% of the new snapshot, which at the default lands at 893px tall — within 5px of the carousel's 898px, so there is nothing for a cap to do yet. A cap could not be built the obvious way in any case: `max-height` on a `padding-bottom` box does nothing, for the reason recorded at length under the feed reel-height entry in 2026.9.10.1.
 
-### The "blurred plate" rule, `article:not([role="dialog"] *) img[aria-hidden="true"]` — removed 2026-09-30, not yet released
+### The "blurred plate" rule, `article:not([role="dialog"] *) img[aria-hidden="true"]` — removed 2026.9.30.1
 
 It was `display: none !important`. Its only documentation was the comment it carried in the first published version, "blurred/black plate drawn behind non-filling media", and user-facing text repeated that as photos losing a blurred plate. The user reported that stock Instagram shows single feed photos in full, with no plate or black background behind them.
 
@@ -112,7 +112,7 @@ It was `display: none !important`. Its only documentation was the comment it car
 
 ## Selectors and overrides
 
-### The stories tray rules, `main > div > div > .xw7yly9 > div` and its two companions — removed 2026-09-30, not yet released
+### The stories tray rules, `main > div > div > .xw7yly9 > div` and its two companions — removed 2026.9.30.1
 
 There were three rules. They made the tray's container (`.xmnaoh6`) a wrapping flex row with `display: flex; flex-direction: row; flex-wrap: wrap`, set `box-sizing: border-box` on its children, and set `flex: 100%` on the first child. Their only documentation was the comment from the first published version: "Stories tray spans the full width."
 
@@ -120,11 +120,11 @@ There were three rules. They made the tray's container (`.xmnaoh6`) a wrapping f
 
 **If the stories tray ever stops spanning the feed width**, check live how many children `.xmnaoh6` has before restoring these rules.
 
-### `.xmnaoh6 + div > div` — removed 2026-09-30, not yet released
+### `.xmnaoh6 + div > div` — removed 2026.9.30.1
 
 This was the second selector on the feed post-column rule, now `main [style*="--x-width"][style*="470px"]` alone. On every feed capture, and on the modal-over-feed capture, both selectors matched the same single element, the post column. At the modal's own `/p/<id>/` URL, where the rule is what stops the post block's carousel rule from capping the feed behind the dialog, removing either selector alone moved nothing, while removing both moved 1144 elements. The attribute selector was kept because it keys on Instagram's inline style rather than a generated class. **If the feed behind a post modal ever shrinks again**, check live whether that column still carries an inline `--x-width` with `470px` before restoring the class-based selector. `docs/rule-notes-feed.md` has the mechanism.
 
-### `article ._aacl._aaco._aacu._aacx._aad7._aade` and `article ._acan` — removed 2026-09-30, not yet released
+### `article ._aacl._aaco._aacu._aacx._aad7._aade` and `article ._acan` — removed 2026.9.30.1
 
 These were two of the three selectors on the caption text rule, now `article .x1f6kntn` (font-size and line-height from the `--system-14-*` tokens, plus `overflow-wrap: anywhere`). A per-rule probe over all 23 snapshots found that neither class appears in any capture, feed or modal. The third selector matches only in the four modals. The rule's inherited purpose was to let feed captions break in the narrow column. The user checked that live with the whole rule removed and the feed caption column at 165px: captions still reflowed and long words still broke.
 
