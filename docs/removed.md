@@ -86,6 +86,16 @@ That ruling retired a README *Known limitations* bullet, deleted the same day, w
 
 **No height cap.** The tallest photo Instagram appears to accept is the 133.333% of the new snapshot, which at the default lands at 893px tall — within 5px of the carousel's 898px, so there is nothing for a cap to do yet. A cap could not be built the obvious way in any case: `max-height` on a `padding-bottom` box does nothing, for the reason recorded at length under the feed reel-height entry in 2026.9.10.1.
 
+### The "blurred plate" rule, `article:not([role="dialog"] *) img[aria-hidden="true"]` — removed 2026-09-30, not yet released
+
+It was `display: none !important`. Its only documentation was the comment it carried in the first published version, "blurred/black plate drawn behind non-filling media", and user-facing text repeated that as photos losing a blurred plate. The user reported that stock Instagram shows single feed photos in full, with no plate or black background behind them.
+
+**What it actually matched.** In all four feed snapshots it matched 1, 2, 5 and 5 images (`Instagram_feed1` to `Instagram_feed4`), and every one was the thumbnail inside a reel's `aria-label="Video player"` overlay: `object-fit: cover`, no filter. Nothing sat behind a single photo, and the only `blur()` in any saved feed CSS was a `backdrop-filter` on an unrelated class.
+
+**Evidence for removing it.** The user deleted it and saw no change live. `verify.py` against `HEAD` on `Instagram_feed4.html` gave 55 standard-property differences, all of them on those reel thumbnails, where `display: none` went back to `block`. Nothing else on the feed moved.
+
+**Before re-adding it:** find a live element that fits the description first. The selector matches whatever Instagram marks `aria-hidden`, and today that is a reel thumbnail, not a plate.
+
 ## The left nav and its dependents — all removed 2026.9.10
 
 ### The collapsing left nav
@@ -101,6 +111,12 @@ That ruling retired a README *Known limitations* bullet, deleted the same day, w
 **`svg[aria-label="Instagram"] { width: min(103px, 100%) }`**, a third nav leftover. In 20260907 it sat immediately after the nav block, which is where its two branches make sense: `100%` stopped the logo overflowing the rail the style had narrowed to 72px, and 103px capped it once hover expanded the rail. With the nav rules gone nothing narrows the rail any more. The selector still matches, but what it matches on all five snapshots is a 24×24 `viewBox="0 0 24 24"` glyph in the rail's home link, not a 103px wordmark — so its containing block is 24px, `100%` resolves to 24px, and `min(103px, 24px)` returns the size the glyph already had. Measured under the `verify.py` harness on the feed snapshot: computed width 24px with and without the rule, and a full two-file diff of the style against itself minus this rule is computationally identical across all 1668 elements. The rail is present in that snapshot but its fixed container computes to width 0, so the offline evidence covers only the collapsed state; the user confirmed on a live page that it changes nothing whatever the rail is doing. This also retires the open item about the `aria-label` being confirmed only on an `en` page — a rule that does nothing cannot silently do nothing in other locales.
 
 ## Selectors and overrides
+
+### `article ._aacl._aaco._aacu._aacx._aad7._aade` and `article ._acan` — removed 2026-09-30, not yet released
+
+These were two of the three selectors on the caption text rule, now `article .x1f6kntn` (font-size and line-height from the `--system-14-*` tokens, plus `overflow-wrap: anywhere`). A per-rule probe over all 23 snapshots found that neither class appears in any capture, feed or modal. The third selector matches only in the four modals. The rule's inherited purpose was to let feed captions break in the narrow column. The user checked that live with the whole rule removed and the feed caption column at 165px: captions still reflowed and long words still broke.
+
+The rule itself stays, because `.x1f6kntn` carries the text-size setting to modal usernames. `scoped.py --diff` showed `font-size: 18px -> 14px` without it, and the user confirmed it live. `docs/rule-notes-feed.md` has the numbers. **If feed caption text ever stops taking the size setting**, check live whether `._aacl` or `._acan` has come back before re-adding them. Their absence from snapshots is not proof they are dead live, only that nothing captured since 2026-09-09 carries them.
 
 ### `:not(.xtcbf50)` — removed 2026.9.10
 

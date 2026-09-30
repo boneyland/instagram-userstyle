@@ -36,9 +36,15 @@ Pairing the two properties on this class closes the gap on every saved page, not
 Both carriers are named. Scoping this to main alone left the comments panel's own 32 .xvs91rp taking the size setting without the spacing one, which is the same defect in a new place.
 
 
-## `article ._aacl._aaco._aacu._aacx._aad7._aade, article ._acan, article .x1f6kntn`
+## `article .x1f6kntn`
 
 Captions sit in a narrow column once the two-column layout below kicks in, so long unbroken words and URLs need somewhere to break.
+
+**That stated purpose no longer describes what the rule does, as of 2026-09-30.** It matches **0 elements on all four feed snapshots**, and the user confirmed live that with the rule removed and the feed caption column at 165px, feed captions still reflow and long words still break onto the next line. So on the feed it does nothing, and Instagram wraps captions without it.
+
+**It still matters in modals, and for text size rather than wrapping.** Across the snapshots, `._aacl._aaco._aacu._aacx._aad7._aade` and `._acan` match nothing anywhere. `.x1f6kntn` matches 4-10 elements in each of the four modal captures and nowhere else, including the username link (`div.x1i10hfl` inside `span.x1lliihq`). `scoped.py --diff` with text size 18 and a 220px modal caption column, rule present versus removed, gave 207, 263, 159 and 159 standard-property differences on the four modals. The largest was `font-size: 18px -> 14px`, with `overflow-wrap: anywhere -> break-word` on the same elements. **Without this rule, the text-size setting stops reaching modal usernames.** The user confirmed this live the same day. Do not delete the rule on the strength of the feed check.
+
+**Trimmed to `.x1f6kntn` on 2026-09-30.** It was `article ._aacl._aaco._aacu._aacx._aad7._aade, article ._acan, article .x1f6kntn`, and the two dropped selectors matched nothing in any capture. `docs/removed.md` has the entry. The first line of this note, about captions needing somewhere to break, is the inherited rationale. It is kept because `overflow-wrap: anywhere` still applies to the modal elements. Whether the modal needs it has not been separated from the text-size effect.
 
 
 ## `.x6bx242`
@@ -253,13 +259,9 @@ The guard's reach was measured across all ten snapshots: it changes exactly one 
 All four are guarded, not just the one carrying the height cap. They are one pipeline: collapsing the box is what makes the cap meaningful, so exempting the cap alone would leave the modal with a collapsed box around an uncapped image, which is worse than either state.
 
 
-## `article:not([role="dialog"] *) img[aria-hidden="true"]`
+## `article:not([role="dialog"] *) img[aria-hidden="true"]` (removed 2026-09-30)
 
-INHERITED, POSSIBLY STALE. The only record of why this rule exists is the comment it carried in the first published version: "blurred/black plate drawn behind non-filling media". Nothing on today's feed matches that description.
-
-Checked on 2026-09-30 against all three feed snapshots: the rule matches 1, 2 and 5 images, and **every one is inside a reel's `aria-label="Video player"` overlay** -- the reel's thumbnail, styled `object-fit: cover` (`.xl1xv1r`) with no filter. None sits behind a single photo, and the only `blur()` in any saved feed CSS is a `backdrop-filter` on an unrelated class. The user confirmed live that single photos have no plate behind them. So the rule currently hides reel thumbnails, not a plate.
-
-SingleFile prunes unused CSS, so a blur that exists only live cannot be ruled out offline. What hiding the thumbnail does to a feed reel before it plays is untested. Measure that live before deleting the rule or changing its selector.
+Removed. It was inherited with the comment "blurred/black plate drawn behind non-filling media", but on today's feed it matched only reel thumbnails, and deleting it changed nothing live. `docs/removed.md` has the evidence.
 
 
 ## `article:not([role="dialog"] *) a:has(div[style*="padding-bottom"])`

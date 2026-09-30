@@ -26,7 +26,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 
 - `article, main, [role="dialog"]`
 - `main .xvs91rp, [role="dialog"] .xvs91rp`
-- `article ._aacl._aaco._aacu._aacx._aad7._aade, article ._acan, article .x1f6kntn`
+- `article .x1f6kntn`
 - `.x6bx242`
 - `main > div:has(> div[style*="630px"]), main > div:has(> div[style*="max-width"])`
 - `main > div > div[style*="630px"], main > div > div[style*="max-width"]`
@@ -44,7 +44,7 @@ Within each file, sections are in the order the rules appear in the style. A hea
 - `article:has(a[href*="/reels/"]):not([role="dialog"] *) a:has(div[style*="padding-bottom"]:not([style*="125%"]))` (removed 2026-09-14)
 - `article:has(a[href*="/reels/"]):not([role="dialog"] *) div[style*="padding-bottom"]:not([style*="125%"])` (and its `> div` and `video`)
 - Media (section header)
-- `article:not([role="dialog"] *) img[aria-hidden="true"]`
+- `article:not([role="dialog"] *) img[aria-hidden="true"]` (removed 2026-09-30)
 - `article:not([role="dialog"] *) a:has(div[style*="padding-bottom"])`
 - the slide counter — `div:not([role="dialog"] *):has(> div > div > div > button[aria-current="step"])` and its three companions
 - `div[role="dialog"] article div[style*="--x-maxWidth"] > div + div` — the post and reel modal caption column

@@ -1,6 +1,6 @@
 /* ==UserStyle==
 @name           Instagram Desktop Site
-@version        2026.9.24.1
+@version        2026.9.30.1
 @namespace      userstyles.world/user/boneyland
 @description    Two-column feed with larger media and less-cropped reels, and post and reel pages brought to a consistent width. Layout widths, media size caps, the caption column on post pages and in the post modal, font size and line spacing are all adjustable, and carousels can show an optional slide counter.
 @author         boneyland
@@ -56,8 +56,6 @@
 		line-height: var(--system-14-line-height);
 	}
 
-	article ._aacl._aaco._aacu._aacx._aad7._aade,
-	article ._acan,
 	article .x1f6kntn {
 		font-size: var(--system-14-font-size);
 		line-height: var(--system-14-line-height);
@@ -206,10 +204,6 @@
 		max-height: var(--u-media-max-height) !important;
 		object-fit: contain !important;
 		margin: 0 auto;
-	}
-
-	article:not([role="dialog"] *) img[aria-hidden="true"] {
-		display: none !important;
 	}
 
 	article:not([role="dialog"] *) a:has(div[style*="padding-bottom"]) {

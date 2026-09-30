@@ -321,6 +321,8 @@ def mode_diff(a, b, only=None):
         rows.append((snap, url, info.get("elements", "?"), int(std), int(cus),
                      len(ba), len(bb), props, els))
 
+    if not rows:
+        return 1
     w = max(len(r[0]) for r in rows)
     print(f"  {'snapshot':<{w}}  {'els':>5}  {'std':>5}  {'custom':>7}  blocks")
     print(f"  {'-' * w}  {'-' * 5}  {'-' * 5}  {'-' * 7}  ------")
